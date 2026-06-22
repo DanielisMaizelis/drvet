@@ -181,24 +181,13 @@
 
   /* ===== full top header (all nav elements, no burger) ===== */
   .site-nav{
-    position:fixed;top:clamp(8px,1.3vw,16px);left:clamp(14px,3vw,48px);right:clamp(14px,3vw,48px);
+    position:fixed;top:0;left:0;right:0;
     z-index:1000;font-family:'Manrope','Helvetica Neue',Arial,sans-serif;color:#0c1413;--accent:#ff6b35;
-    display:flex;flex-direction:column;gap:clamp(6px,.8vw,12px);   /* two separate stacked pills */
+    display:flex;flex-direction:column;   /* utility bar on top, main row below */
     transition:transform .45s cubic-bezier(.76,0,.24,1);
   }
   .site-nav.nav-hidden{transform:translateY(-150%)}   /* hides when scrolling down */
-  /* each bar is its own rounded, grainy dark-cyan pill */
-  .nav-bar{
-    position:relative;isolation:isolate;border-radius:clamp(16px,1.8vw,28px);
-    background:transparent;border:1px solid rgba(12,20,19,.08);
-    transition:border-color .4s ease;
-  }
-  /* grainy fill using the EXACT veterinarija noise as a MASK -> keeps its transparent speckle */
-  .nav-bar::before{
-    content:"";position:absolute;inset:0;z-index:-1;pointer-events:none;border-radius:inherit;
-    background:#fff;   /* plain white bar (no grain) */
-    transition:background .4s ease;
-  }
+  .nav-bar{position:relative;background:transparent}   /* transparent headers */
   .site-nav a{text-decoration:none;color:#0c1413;transition:color .25s}
   .site-nav .grainy{-webkit-mask-image:none;mask-image:none}   /* header text crisp (no grain) */
   .site-nav a:hover{color:var(--accent)}
@@ -210,9 +199,9 @@
   /* white when at the very top of the page */
   /* top utility row */
   .site-nav__top{
-    order:1;align-self:center;   /* lowered below the main bar, centered */
-    display:flex;align-items:center;justify-content:flex-start;gap:clamp(10px,1.4vw,18px);
-    padding:9px clamp(20px,2.6vw,34px);font-size:15px;white-space:nowrap;   /* all items on one line */
+    order:0;align-self:stretch;   /* full-width bar at the very top */
+    display:flex;align-items:center;justify-content:center;gap:clamp(10px,1.4vw,18px);
+    padding:8px clamp(20px,4vw,54px);font-size:13px;white-space:nowrap;   /* all items on one line */
   }
   .nav-utility{display:flex;gap:22px}
   .nav-utility__right{display:flex;align-items:center;gap:clamp(14px,2vw,28px)}
@@ -224,13 +213,14 @@
   /* main row */
   /* main row: logo + nav pill + button, logo & button OUTSIDE the pill */
   .site-nav__main{
-    display:flex;align-items:center;justify-content:space-between;gap:clamp(12px,2vw,28px);
+    order:1;display:flex;align-items:center;justify-content:space-between;gap:clamp(12px,2vw,28px);
+    padding:clamp(8px,1.2vw,16px) clamp(16px,4vw,54px);
   }
   .nav-pill{padding:16px clamp(26px,3.2vw,48px)}   /* the rounded box holds only the links */
   .nav-logo img{height:clamp(20px,2vw,30px);width:auto;display:block}
   .nav-main{display:flex;align-items:center;gap:clamp(12px,1.5vw,26px);flex-wrap:wrap}
   .nav-main>li{position:relative}
-  .nav-main>li>a,.nav-main .list-name>a{position:relative;font-size:clamp(13px,.9vw,15px);font-weight:600;letter-spacing:-.01em;white-space:nowrap}
+  .nav-main>li>a,.nav-main .list-name>a{position:relative;font-size:clamp(15px,1.1vw,18px);font-weight:600;letter-spacing:-.01em;white-space:nowrap}
   .nav-main .list-name{display:inline-flex;align-items:center;gap:5px}
   /* hand-drawn grainy orange underline that wipes in on hover (site aesthetic) */
   .nav-main>li>a::after,.nav-main .list-name>a::after,.nav-utility a::after,.nav-odont::after{
@@ -386,7 +376,7 @@
   }
   .scribble path{fill:none;stroke:#ff6b35;stroke-width:16;stroke-linecap:round;
     stroke-linejoin:round;vector-effect:non-scaling-stroke}
-  .hero__heading .line{display:block;overflow:hidden;padding-bottom:.14em;margin-bottom:-.14em}
+  .hero__heading .line{display:block;overflow:hidden;padding-bottom:.22em;margin-bottom:-.22em}
   .hero__heading .line.line--uline{position:relative;padding-bottom:.55em;margin-bottom:-.55em}  /* room for the underline */
   .hero__heading .line span{display:block} /* visible by default; GSAP sets start state */
   /* grainy / pencil-shaded fill: noise texture punched through the letters as a mask */
@@ -412,15 +402,20 @@
     /* top & height set by JS to span end-of-hero -> footer */
   }
   .scrollspine__fill{
-    display:block;width:100%;height:100%;overflow:visible;will-change:mask;
-    /* lightweight reveal: single top->bottom wipe with soft fading tip (no grain = far cheaper paint) */
-    -webkit-mask-image:linear-gradient(to bottom,transparent 0%,#000 4%,#000 var(--rev),transparent calc(var(--rev) + 12%));
-    mask-image:linear-gradient(to bottom,transparent 0%,#000 4%,#000 var(--rev),transparent calc(var(--rev) + 12%));
-    -webkit-mask-size:100% 100%;mask-size:100% 100%;
-    -webkit-mask-repeat:no-repeat;mask-repeat:no-repeat;
+    display:block;width:100%;height:100%;overflow:visible;
+    /* dual mask: top->bottom draw-on wipe (--rev, soft fading tip) INTERSECTED with the underline's grain */
+    -webkit-mask-image:
+      linear-gradient(to bottom,transparent 0%,#000 4%,#000 var(--rev),transparent calc(var(--rev) + 12%)),
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='s'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeComponentTransfer%3E%3CfeFuncA type='table' tableValues='0.15 1 0.35 1'/%3E%3C/feComponentTransfer%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23s)'/%3E%3C/svg%3E");
+    mask-image:
+      linear-gradient(to bottom,transparent 0%,#000 4%,#000 var(--rev),transparent calc(var(--rev) + 12%)),
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='s'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeComponentTransfer%3E%3CfeFuncA type='table' tableValues='0.15 1 0.35 1'/%3E%3C/feComponentTransfer%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23s)'/%3E%3C/svg%3E");
+    -webkit-mask-size:100% 100%,120px 120px;mask-size:100% 100%,120px 120px;
+    -webkit-mask-repeat:no-repeat,repeat;mask-repeat:no-repeat,repeat;
+    -webkit-mask-composite:source-in;mask-composite:intersect;
   }
   .scrollspine__fill path{
-    fill:none;stroke:#ff6b35;stroke-width:clamp(70px,10vw,150px);   /* thinner -> lighter paint */
+    fill:none;stroke:#ff6b35;stroke-width:clamp(168px,24vw,336px);
     stroke-linecap:round;stroke-linejoin:round;vector-effect:non-scaling-stroke;
   }
   @media (hover:none){.scrollspine{display:none}}
@@ -433,7 +428,7 @@
   }
   .klinikos__text h2{
     font-family:'Fraunces',Georgia,serif;font-weight:600;letter-spacing:-.02em;
-    font-size:clamp(44px,6.4vw,104px);line-height:.98;margin:0 0 .32em;color:#0c1413;
+    font-size:clamp(44px,6.4vw,104px);line-height:1.12;margin:0 0 .32em;color:#0c1413;
   }
   .klinikos__text p{
     font-size:clamp(17px,1.55vw,25px);line-height:1.55;color:#33403e;
@@ -470,7 +465,7 @@
   .petsapp__text{padding:clamp(34px,5vw,74px);align-self:center}
   .petsapp__text h2{
     font-family:'Fraunces',Georgia,serif;font-weight:600;letter-spacing:-.02em;color:#fff;
-    font-size:clamp(40px,5.4vw,90px);line-height:1.0;margin:0 0 .42em;
+    font-size:clamp(40px,5.4vw,90px);line-height:1.12;margin:0 0 .42em;
   }
   .petsapp__text p{
     color:rgba(255,255,255,.86);font-size:clamp(16px,1.4vw,22px);line-height:1.5;
@@ -1071,23 +1066,6 @@ function runIntro(){
 // run as soon as the DOM is ready — do NOT wait for the video to finish loading
 if(document.readyState==='loading'){ document.addEventListener('DOMContentLoaded', runIntro); }
 else { runIntro(); }
-
-// ===== hover the hero video: morph it into a bigger circle =====
-(function(){
-  const media = document.querySelector('.hero__media');
-  const video = document.querySelector('.hero__video');
-  if(!media || !video || !window.gsap || matchMedia('(hover:none)').matches) return;
-  media.addEventListener('mouseenter', ()=>{
-    gsap.to(media, {scale:1.08, duration:.6, ease:'expo.out'});
-    gsap.fromTo(video, {clipPath:'circle(42% at 50% 50%)', webkitClipPath:'circle(42% at 50% 50%)'},
-                       {clipPath:'circle(62% at 50% 50%)', webkitClipPath:'circle(62% at 50% 50%)', duration:.6, ease:'expo.out'});
-  });
-  media.addEventListener('mouseleave', ()=>{
-    gsap.to(media, {scale:1, duration:.6, ease:'expo.out'});
-    gsap.to(video, {clipPath:'circle(42% at 50% 50%)', webkitClipPath:'circle(42% at 50% 50%)', duration:.4, ease:'power2.in',
-      onComplete:()=>{ video.style.clipPath='url(#houseRound)'; video.style.webkitClipPath='url(#houseRound)'; }});
-  });
-})();
 
 // scattered bones + wool: drift with the cursor + smooth idle levitation
 (function(){
