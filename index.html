@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="lt">
+<html lang="lt" class="pt-loading">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -55,32 +55,52 @@
   }
   @media (hover:none){.cursor{display:none} body{cursor:auto}}
 
-  /* ===== opening intro: white bg, a zigzag line draws corner -> middle -> on, logo centred, then fade ===== */
-  #intro{
-    position:fixed;inset:0;z-index:9999;overflow:hidden;background:#fff;
-    display:flex;align-items:center;justify-content:center;
-  }
-  #introzig{
-    position:absolute;inset:0;width:100%;height:100%;--w:-8%;
-    /* draw wipe (bottom-left -> top-right) INTERSECTED with the page grain */
+  /* ===== awwwards page transition: grainy diagonal ribbon wipe (same torn-edge tech as the intro) ===== */
+  .pt{position:fixed;inset:0;z-index:10000;pointer-events:none}
+  /* opening: overlay starts fully covering (reveal-mode panels at --w:-15% are solid) until JS sweeps it away */
+  html.pt-loading{overflow:hidden}
+  html.pt-loading .pt{pointer-events:all}
+  html.pt-loading .pt__mark{opacity:1}
+  .pt__panel{
+    position:absolute;inset:0;--w:-15%;will-change:mask-image;
+    /* solid colour wiped diagonally (to top-right, like the intro) with a torn grainy leading edge */
     -webkit-mask-image:
-      linear-gradient(to top right,#000 0%,#000 var(--w),transparent calc(var(--w) + 8%)),
+      linear-gradient(to top right,#000 0%,#000 var(--w),transparent calc(var(--w) + 12%)),
       url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='s'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeComponentTransfer%3E%3CfeFuncA type='table' tableValues='0.15 1 0.35 1'/%3E%3C/feComponentTransfer%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23s)'/%3E%3C/svg%3E");
     mask-image:
-      linear-gradient(to top right,#000 0%,#000 var(--w),transparent calc(var(--w) + 8%)),
+      linear-gradient(to top right,#000 0%,#000 var(--w),transparent calc(var(--w) + 12%)),
       url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='s'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeComponentTransfer%3E%3CfeFuncA type='table' tableValues='0.15 1 0.35 1'/%3E%3C/feComponentTransfer%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23s)'/%3E%3C/svg%3E");
-    -webkit-mask-size:100% 100%,120px 120px;mask-size:100% 100%,120px 120px;
     -webkit-mask-repeat:no-repeat,repeat;mask-repeat:no-repeat,repeat;
+    -webkit-mask-size:100% 100%,150px 150px;mask-size:100% 100%,150px 150px;
     -webkit-mask-composite:source-in;mask-composite:intersect;
   }
-  #introzig path{
-    fill:none;stroke:#ff6b35;stroke-width:clamp(120px,18vw,270px);   /* 3x thicker */
-    stroke-linecap:round;stroke-linejoin:round;vector-effect:non-scaling-stroke;
+  /* three colours, each grain offset so their holes don't align -> the cover stays opaque */
+  .pt__panel--1{background:#ff6b35;-webkit-mask-position:0 0,0 0;mask-position:0 0,0 0}
+  .pt__panel--2{background:#e85a28;-webkit-mask-position:0 0,47px 23px;mask-position:0 0,47px 23px}
+  .pt__panel--3{background:#0a5f66;-webkit-mask-position:0 0,89px 61px;mask-position:0 0,89px 61px}
+  /* light mode (the opening): a bright warm ribbon ending on cream, with the dark logo */
+  .pt--light .pt__panel--1{background:#ffb27a}
+  .pt--light .pt__panel--2{background:#ffd9b8}
+  .pt--light .pt__panel--3{background:#f6f1e7}
+  .pt--light .pt__mark img{filter:none}
+  /* reveal phase: transparency leads from the bottom-left, sweeping the cover away to the top-right */
+  .pt.pt--reveal .pt__panel{
+    -webkit-mask-image:
+      linear-gradient(to top right,transparent 0%,transparent var(--w),#000 calc(var(--w) + 12%)),
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='s'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeComponentTransfer%3E%3CfeFuncA type='table' tableValues='0.15 1 0.35 1'/%3E%3C/feComponentTransfer%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23s)'/%3E%3C/svg%3E");
+    mask-image:
+      linear-gradient(to top right,transparent 0%,transparent var(--w),#000 calc(var(--w) + 12%)),
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='s'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeComponentTransfer%3E%3CfeFuncA type='table' tableValues='0.15 1 0.35 1'/%3E%3C/feComponentTransfer%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23s)'/%3E%3C/svg%3E");
   }
-  .intro__logo{
-    position:absolute;top:50%;left:50%;z-index:5;transform:translate(-50%,-50%);   /* highest, in the middle */
-    height:clamp(20px,3vw,42px);width:auto;
-    background:#fff;padding:12px 18px;border-radius:999px;
+  /* centred brand mark that flashes during the wipe */
+  .pt__mark{
+    position:absolute;inset:0;z-index:2;opacity:0;pointer-events:none;
+    display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;
+  }
+  .pt__mark img{height:clamp(22px,3vw,38px);width:auto;filter:brightness(0) invert(1)}
+  .pt__line{
+    display:block;width:clamp(84px,11vw,140px);height:12px;transform-origin:left center;
+    background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 300 14' preserveAspectRatio='none'%3E%3Cpath d='M3,8 C40,13 70,3 102,7 C140,12 165,3 200,7 C240,12 268,3 297,7' fill='none' stroke='%23ff6b35' stroke-width='3.4' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") 0 0/100% 100% no-repeat;
   }
 
   /* transparent header — logo left, menu right */
@@ -213,9 +233,14 @@
   /* main row */
   /* main row: logo + nav pill + button, logo & button OUTSIDE the pill */
   .site-nav__main{
-    order:1;display:flex;align-items:center;justify-content:space-between;gap:clamp(12px,2vw,28px);
-    padding:clamp(8px,1.2vw,16px) clamp(16px,4vw,54px);
+    order:1;display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:clamp(12px,2vw,28px);
+    padding:clamp(8px,1.2vw,16px) clamp(22px,6vw,110px);   /* side margin matches the hero */
   }
+  .site-nav__main .nav-logo{justify-self:start}            /* logo left */
+  .site-nav__main .nav-burger{justify-self:center}         /* menu dead-centre */
+  .site-nav__main .nav-actions{justify-self:end}           /* registration + cart right */
+  .site-nav__main .nav-cart{display:inline-flex;align-items:center;color:#0c1413}
+  .site-nav__main .nav-cart svg{width:23px;height:23px}
   .nav-pill{padding:16px clamp(26px,3.2vw,48px)}   /* the rounded box holds only the links */
   .nav-logo img{height:clamp(20px,2vw,30px);width:auto;display:block}
   .nav-main{display:flex;align-items:center;gap:clamp(12px,1.5vw,26px);flex-wrap:wrap}
@@ -247,20 +272,182 @@
   }
   .nav-dropdown ul{text-align:right}
   .nav-dropdown a{font-size:14px;font-weight:500;white-space:nowrap}
-  /* registration button: outlined pill with arrow, fills orange on hover (adapts to bar colour) */
+  /* registration: plain text, same Fraunces font + grainy wiggly underline as the menu links */
   .nav-reg{
-    display:inline-flex;align-items:center;gap:8px;background:#ff6b35;color:#fff!important;
-    font-weight:600;font-size:clamp(14px,1vw,16px);padding:9px 20px;border-radius:999px;white-space:nowrap;
-    border:1.5px solid #ff6b35;transition:background .25s,color .25s,border-color .25s,transform .25s;
+    position:relative;display:inline-block;background:none;border:none;padding:0;color:#0c1413;white-space:nowrap;
+    font-family:'Fraunces',Georgia,serif;font-weight:600;font-size:clamp(17px,1.3vw,21px);letter-spacing:-.01em;
+    transition:color .25s,transform .45s cubic-bezier(.2,.7,.2,1);
   }
-  .nav-reg::after{content:"→";font-weight:600;line-height:1}
-  .nav-reg:hover{background:#e85a28;border-color:#e85a28;color:#fff!important;transform:translateY(-1px)}
-  @media(max-width:1180px){
-    .site-nav__top{display:none}
-    .site-nav__main{overflow-x:auto;flex-wrap:nowrap;scrollbar-width:none}
-    .site-nav__main::-webkit-scrollbar{display:none}
-    .nav-main{flex-wrap:nowrap}
+  .nav-reg:hover{color:var(--accent);font-style:italic;transform:scale(1.06)}
+  .nav-reg::after{
+    content:"";position:absolute;left:-2px;right:-2px;bottom:-4px;height:11px;
+    background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 300 14' preserveAspectRatio='none'%3E%3Cpath d='M3,8 C40,13 70,3 102,7 C140,12 165,3 200,7 C240,12 268,3 297,7' fill='none' stroke='%23ff6b35' stroke-width='3.4' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") 0 0/100% 100% no-repeat;
+    transform:scaleX(0);transform-origin:left center;transition:transform .42s cubic-bezier(.76,0,.24,1);
+    -webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='90' height='90'%3E%3Cfilter id='u'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeComponentTransfer%3E%3CfeFuncA type='table' tableValues='0.15 1 0.35 1'/%3E%3C/feComponentTransfer%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23u)'/%3E%3C/svg%3E") 0 0/70px 70px repeat;
+    mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='90' height='90'%3E%3Cfilter id='u'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeComponentTransfer%3E%3CfeFuncA type='table' tableValues='0.15 1 0.35 1'/%3E%3C/feComponentTransfer%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23u)'/%3E%3C/svg%3E") 0 0/70px 70px repeat;
   }
+  .nav-reg:hover::after{transform:scaleX(1)}
+
+  /* everything except Registruokitės lives in the burger now */
+  .site-nav__top{display:none}
+  .nav-actions{display:flex;align-items:center;gap:clamp(12px,1.4vw,20px)}
+  /* menu trigger: a grainy hand-drawn pill button (site philosophy: orange ink + grain) */
+  .nav-burger{
+    position:relative;display:inline-flex;align-items:center;gap:11px;
+    border:none;cursor:pointer;padding:9px 20px 9px 18px;border-radius:999px;
+    background:#ff6b35;color:#fff;
+    font-family:'Fraunces',Georgia,serif;font-weight:600;font-size:clamp(15px,1.1vw,18px);letter-spacing:-.01em;
+    transition:background .3s,transform .35s cubic-bezier(.76,0,.24,1);
+  }
+  .nav-burger.grain-bg::after{opacity:.4}                 /* grain over the pill (and label) */
+  .nav-burger:hover{background:#0a5f66;transform:translateY(-2px)}   /* shifts to dark cyan */
+  .nav-burger__label{position:relative;z-index:8;line-height:1}
+  .nav-burger__lines{position:relative;z-index:8;display:inline-flex;flex-direction:column;gap:5px;width:22px}
+  .nav-burger__lines i{display:block;width:100%;height:2.4px;border-radius:2px;background:currentColor;
+    transition:transform .4s cubic-bezier(.76,0,.24,1)}
+  /* open -> X */
+  body.menu-open .nav-burger__lines i:nth-child(1){transform:translateY(3.7px) rotate(45deg)}
+  body.menu-open .nav-burger__lines i:nth-child(2){transform:translateY(-3.7px) rotate(-45deg)}
+
+  /* dim backdrop (page tint behind the circular reveal) */
+  .nav-overlay{
+    position:fixed;inset:0;z-index:1400;background:rgba(8,14,13,.55);
+    opacity:0;visibility:hidden;transition:opacity .5s,visibility .5s;
+  }
+  body.menu-open .nav-overlay{opacity:1;visibility:visible}
+
+  /* ===== awwwards-style full-screen centered menu — grainy dark cyan, warm serif, hand-drawn ===== */
+  .nav-panel{
+    position:fixed;inset:0;z-index:1500;width:100%;height:100%;
+    background:#0a5f66;color:#f4f1ea;--accent:#ff6b35;
+    font-family:'Manrope','Helvetica Neue',Arial,sans-serif;
+    display:flex;flex-direction:column;align-items:center;justify-content:center;
+    overflow-y:auto;overflow-x:hidden;
+    /* circular reveal originating from the burger (top-centre) */
+    clip-path:circle(0% at 50% 46px);
+    -webkit-clip-path:circle(0% at 50% 46px);
+    transition:clip-path .72s cubic-bezier(.76,0,.24,1),-webkit-clip-path .72s cubic-bezier(.76,0,.24,1);
+  }
+  body.menu-open .nav-panel{
+    clip-path:circle(150% at 50% 46px);
+    -webkit-clip-path:circle(150% at 50% 46px);
+  }
+  /* grain over the whole panel — textures the cyan AND the type together */
+  .nav-panel.grain-bg::after{position:fixed;opacity:.5}
+  /* two faint hand-drawn curvy lines drifting behind the menu (echo of the global scroll spine) */
+  .nav-panel__deco{
+    position:fixed;inset:0;z-index:1;pointer-events:none;opacity:.1;
+    background:
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 600' preserveAspectRatio='none'%3E%3Cpath d='M18,-10 C62,80 -14,150 30,240 C72,325 -6,400 36,490 C66,560 26,610 20,640' fill='none' stroke='%23ff6b35' stroke-width='9' stroke-linecap='round'/%3E%3C/svg%3E") -6vw 0/40vw 100% no-repeat,
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 600' preserveAspectRatio='none'%3E%3Cpath d='M82,-10 C38,80 114,150 70,240 C28,325 106,400 64,490 C34,560 74,610 80,640' fill='none' stroke='%23ff6b35' stroke-width='9' stroke-linecap='round'/%3E%3C/svg%3E") calc(100% + 6vw) 0/40vw 100% no-repeat;
+  }
+  .nav-panel>*:not(.nav-panel__deco){position:relative;z-index:2}
+  .nav-panel a{text-decoration:none;color:#f4f1ea;transition:color .25s}
+  .nav-panel a:hover{color:var(--accent)}
+  .nav-panel ul{list-style:none;margin:0;padding:0}
+  /* top bar: logo (left) + close (right), pinned across the top */
+  .nav-panel__head{
+    position:absolute;top:0;left:0;right:0;
+    display:flex;align-items:center;justify-content:space-between;
+    padding:clamp(22px,3vw,34px) clamp(26px,4vw,48px);
+  }
+  .nav-panel__head img{height:clamp(22px,2.2vw,30px);width:auto;display:block;filter:brightness(0) invert(1)}
+  .nav-panel__close{
+    width:44px;height:44px;border:none;background:transparent;cursor:pointer;position:relative;color:#f4f1ea;
+    transition:transform .4s cubic-bezier(.76,0,.24,1),color .25s;
+  }
+  .nav-panel__close:hover{color:var(--accent);transform:rotate(90deg)}
+  .nav-panel__close::before,.nav-panel__close::after{
+    content:"";position:absolute;left:10px;top:21px;width:24px;height:2.5px;border-radius:2px;background:currentColor;
+  }
+  .nav-panel__close::before{transform:rotate(45deg)}
+  .nav-panel__close::after{transform:rotate(-45deg)}
+  /* link list grows to fill the middle so the stack sits dead-centre, util pins to the bottom */
+  .nav-panel>nav{flex:1;display:flex;align-items:center;justify-content:center;width:100%;min-height:0}
+  /* centered link stack */
+  .nav-panel__links{counter-reset:nav;text-align:center;padding:clamp(60px,10vh,120px) 20px clamp(20px,4vh,40px)}
+  .nav-panel__links>li{
+    /* staggered rise-in reveal when the menu opens */
+    opacity:0;transform:translateY(40px);
+    transition:opacity .55s ease,transform .6s cubic-bezier(.2,.7,.2,1);
+  }
+  body.menu-open .nav-panel__links>li{opacity:1;transform:translateY(0)}
+  body.menu-open .nav-panel__links>li:nth-child(1){transition-delay:.20s}
+  body.menu-open .nav-panel__links>li:nth-child(2){transition-delay:.26s}
+  body.menu-open .nav-panel__links>li:nth-child(3){transition-delay:.32s}
+  body.menu-open .nav-panel__links>li:nth-child(4){transition-delay:.38s}
+  body.menu-open .nav-panel__links>li:nth-child(5){transition-delay:.44s}
+  body.menu-open .nav-panel__links>li:nth-child(6){transition-delay:.50s}
+  body.menu-open .nav-panel__links>li:nth-child(7){transition-delay:.56s}
+  body.menu-open .nav-panel__links>li:nth-child(8){transition-delay:.62s}
+  body.menu-open .nav-panel__links>li:nth-child(9){transition-delay:.68s}
+  .nav-panel__links>li>a,.nav-panel__links .list-name>a{
+    position:relative;display:inline-block;
+    font-family:'Fraunces',Georgia,serif;font-weight:600;letter-spacing:-.02em;line-height:1.0;
+    font-size:clamp(34px,6.2vw,76px);
+    transition:color .25s,opacity .35s,transform .45s cubic-bezier(.2,.7,.2,1);
+  }
+  /* hover focus: the hovered link grows, the rest dim back (classic awwwards) */
+  body.menu-open .nav-panel__links:hover>li>a{opacity:.4}
+  body.menu-open .nav-panel__links>li:hover>a,
+  body.menu-open .nav-panel__links .list-name:hover>a{opacity:1;font-style:italic;transform:scale(1.04)}
+  /* little orange index numbers — 01, 02, … floated above each link */
+  .nav-panel__links>li>a::before,.nav-panel__links .list-name>a::before{
+    counter-increment:nav;content:counter(nav,decimal-leading-zero);
+    position:absolute;top:-.2em;left:-1.4em;
+    font-family:'Manrope',sans-serif;font-size:13px;font-weight:700;color:var(--accent);letter-spacing:.04em;
+  }
+  .nav-panel .list-name{display:inline-flex;align-items:center;gap:6px}
+  .nav-panel .chevron{display:none}
+  /* + toggle that expands the sub-points (spins into an × when open) */
+  .nav-sub-toggle{
+    width:36px;height:36px;border:none;background:transparent;cursor:pointer;position:relative;
+    color:var(--accent);flex:none;transition:transform .45s cubic-bezier(.76,0,.24,1);
+  }
+  .nav-sub-toggle::before,.nav-sub-toggle::after{
+    content:"";position:absolute;left:50%;top:50%;width:17px;height:2.6px;border-radius:2px;
+    background:currentColor;transform:translate(-50%,-50%);
+  }
+  .nav-sub-toggle::after{transform:translate(-50%,-50%) rotate(90deg)}   /* the vertical bar -> makes a + */
+  .nav-panel__links>li.open .nav-sub-toggle{transform:rotate(135deg)}    /* + spins into × */
+  /* collapsible sub-points */
+  .nav-panel .nav-dropdown{
+    display:block;max-height:0;overflow:hidden;opacity:0;
+    transition:max-height .55s cubic-bezier(.76,0,.24,1),opacity .4s,padding .45s;padding:0;
+  }
+  .nav-panel__links>li.open .nav-dropdown{max-height:360px;opacity:1;padding:14px 0 8px}
+  .nav-panel .nav-dropdown ul{display:flex;flex-direction:column;align-items:center;gap:10px}
+  .nav-panel .nav-dropdown a{
+    position:relative;display:inline-block;font-family:'Fraunces',Georgia,serif;
+    font-size:clamp(17px,1.9vw,22px);font-weight:500;color:rgba(244,241,234,.62);
+    transition:color .25s,transform .45s cubic-bezier(.2,.7,.2,1);
+  }
+  /* sub-points change the same way as the main links: italic + lift on hover */
+  .nav-panel .nav-dropdown a:hover{color:var(--accent);font-style:italic;transform:scale(1.06)}
+  /* centered links borrow the Registruokitės effect: an orange → arrow slides in + the link lifts */
+  /* hand-drawn grainy orange underline that wipes in on hover (small util links) */
+  .nav-panel__util>ul a::after{
+    content:"";position:absolute;left:-2px;right:-2px;bottom:-2px;height:13px;
+    background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 300 14' preserveAspectRatio='none'%3E%3Cpath d='M3,8 C40,13 70,3 102,7 C140,12 165,3 200,7 C240,12 268,3 297,7' fill='none' stroke='%23ff6b35' stroke-width='3.4' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") 0 0/100% 100% no-repeat;
+    transform:scaleX(0);transform-origin:left center;transition:transform .42s cubic-bezier(.76,0,.24,1);
+    -webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='90' height='90'%3E%3Cfilter id='u'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeComponentTransfer%3E%3CfeFuncA type='table' tableValues='0.15 1 0.35 1'/%3E%3C/feComponentTransfer%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23u)'/%3E%3C/svg%3E") 0 0/70px 70px repeat;
+    mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='90' height='90'%3E%3Cfilter id='u'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeComponentTransfer%3E%3CfeFuncA type='table' tableValues='0.15 1 0.35 1'/%3E%3C/feComponentTransfer%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23u)'/%3E%3C/svg%3E") 0 0/70px 70px repeat;
+  }
+  .nav-panel__util>ul a{position:relative}
+  .nav-panel__util>ul a:hover::after{transform:scaleX(1)}
+  /* utility row at the foot — centered, inline */
+  .nav-panel__util{
+    width:100%;padding:clamp(16px,3vh,30px) clamp(26px,4vw,48px) clamp(26px,4vh,42px);
+    display:flex;flex-direction:column;align-items:center;gap:18px;text-align:center;
+  }
+  .nav-panel__util>ul{display:flex;flex-wrap:wrap;justify-content:center;gap:10px 26px}
+  .nav-panel__util>ul a{font-family:'Manrope',sans-serif;font-size:14px;font-weight:600;color:rgba(244,241,234,.8)}
+  .nav-panel__util>ul a:hover{color:var(--accent)}
+  .nav-panel__social{display:flex;align-items:center;gap:20px}
+  .nav-panel__social a{color:#f4f1ea;display:inline-flex;transition:color .25s,transform .25s}
+  .nav-panel__social a:hover{color:var(--accent);transform:translateY(-3px)}
+  .nav-panel__social a svg{width:22px;height:22px;display:block}
+  .nav-panel__social .nav-cart svg{width:24px;height:24px}
 
   /* scattered bones + wool that drift with the cursor */
   .scatter{position:absolute;z-index:1;pointer-events:none;will-change:transform}
@@ -285,26 +472,45 @@
     padding-right:clamp(22px,6vw,110px);
   }
 
-  /* the image is centered, 2x smaller */
+  /* hero media: a big circular video bubble with two smaller picture bubbles levitating around it */
   .hero__media{
-    position:relative;
-    width:37.5vw;height:75vh;flex-shrink:0;
+    position:relative;flex-shrink:0;align-self:center;
+    width:min(48vw,660px);height:min(48vw,660px);
   }
-  .hero__video{
-    position:absolute;inset:0;width:100%;height:100%;
-    object-fit:cover;
-    /* house shape with rounded corners (SVG clip-path) */
-    clip-path:url(#houseRound);
+  .bubble{
+    position:absolute;border-radius:50%;overflow:hidden;background:#0a5f66;
+    box-shadow:0 28px 60px rgba(8,30,30,.20);will-change:transform;
   }
-  /* HEAVY pencil grain over the video, clipped to the same house shape */
+  .bubble img{width:100%;height:100%;object-fit:cover;display:block}
+  /* same heavy pencil grain over the picture bubbles (clipped to the circle) */
+  .bubble--a::after,.bubble--b::after{
+    content:"";position:absolute;inset:0;z-index:2;pointer-events:none;
+    background-image:
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.6' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3CfeComponentTransfer%3E%3CfeFuncR type='gamma' exponent='2.6'/%3E%3CfeFuncG type='gamma' exponent='2.6'/%3E%3CfeFuncB type='gamma' exponent='2.6'/%3E%3C/feComponentTransfer%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23g)'/%3E%3C/svg%3E"),
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='150' height='150'%3E%3Cfilter id='f'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='1.1' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23f)'/%3E%3C/svg%3E");
+    background-size:300px 300px,150px 150px;background-repeat:repeat;
+    mix-blend-mode:overlay;opacity:.75;
+  }
+  /* biggest bubble = the same video */
+  .bubble--main{width:84%;height:84%;left:8%;top:8%;animation:floatMain 7.5s ease-in-out infinite}
+  /* smaller picture bubbles, hugging the main circle's edge */
+  .bubble--a{width:44%;height:44%;top:-5%;right:-5%;animation:floatA 5.6s ease-in-out infinite}
+  .bubble--b{width:37%;height:37%;bottom:-2%;left:-6%;animation:floatB 6.6s ease-in-out infinite}
+  .hero__video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+  /* HEAVY pencil grain over the video (clipped to the circle by the bubble's overflow) */
   .hero__grain{
-    position:absolute;inset:0;z-index:2;pointer-events:none;clip-path:url(#houseRound);
+    position:absolute;inset:0;z-index:2;pointer-events:none;
     background-image:
       url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.6' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3CfeComponentTransfer%3E%3CfeFuncR type='gamma' exponent='2.6'/%3E%3CfeFuncG type='gamma' exponent='2.6'/%3E%3CfeFuncB type='gamma' exponent='2.6'/%3E%3C/feComponentTransfer%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23g)'/%3E%3C/svg%3E"),
       url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='150' height='150'%3E%3Cfilter id='f'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='1.1' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23f)'/%3E%3C/svg%3E");
     background-size:300px 300px, 150px 150px;background-repeat:repeat;
     mix-blend-mode:overlay;opacity:.75;
   }
+  /* gentle, desynced levitation */
+  @keyframes floatMain{0%,100%{transform:translateY(0) rotate(0deg)}50%{transform:translateY(-16px) rotate(-1.2deg)}}
+  @keyframes floatA{0%,100%{transform:translateY(0) rotate(0deg)}50%{transform:translateY(-24px) rotate(3deg)}}
+  @keyframes floatB{0%,100%{transform:translateY(0) rotate(0deg)}50%{transform:translateY(20px) rotate(-3deg)}}
+  @media (prefers-reduced-motion:reduce){.bubble{animation:none!important}}
 
   /* HUGE heading centered over the image; blend keeps it legible everywhere */
   .hero__heading{
@@ -315,7 +521,7 @@
     color:#0c1413;
     font-weight:600;
     letter-spacing:-.03em;
-    line-height:.85;
+    line-height:.95;
     font-size:clamp(40px,8.5vw,150px);
     pointer-events:none;
   }
@@ -376,8 +582,8 @@
   }
   .scribble path{fill:none;stroke:#ff6b35;stroke-width:16;stroke-linecap:round;
     stroke-linejoin:round;vector-effect:non-scaling-stroke}
-  .hero__heading .line{display:block;overflow:hidden;padding-bottom:.22em;margin-bottom:-.22em}
-  .hero__heading .line.line--uline{position:relative;padding-bottom:.55em;margin-bottom:-.55em}  /* room for the underline */
+  .hero__heading .line{display:block;overflow:hidden;padding-bottom:.34em;margin-bottom:-.34em}  /* room for descenders (g/j/ų) */
+  .hero__heading .line.line--uline{position:relative;padding-bottom:.62em;margin-bottom:-.62em}  /* room for the underline */
   .hero__heading .line span{display:block} /* visible by default; GSAP sets start state */
   /* grainy / pencil-shaded fill: noise texture punched through the letters as a mask */
   .grainy{
@@ -491,7 +697,7 @@
   }
 
   @media(max-width:680px){
-    .hero__media{width:88vw;height:40vh}
+    .hero__media{width:min(86vw,420px);height:min(86vw,420px)}
     .hero__heading{font-size:clamp(48px,18vw,120px)}
   }
 
@@ -636,6 +842,7 @@
     font-size:clamp(30px,4vw,58px);line-height:1.02;margin:0 0 22px;
   }
   .foot-brand h2 b{color:#ff6b35;font-weight:600}
+  .foot-logo{display:block;height:clamp(34px,4.4vw,62px);width:auto;margin:0 0 24px;filter:brightness(0) invert(1)}
   .foot-brand p{max-width:48ch;font-size:clamp(14px,1.1vw,16px);line-height:1.7;
     color:rgba(244,241,234,.72);margin:0;}
   .foot-eyebrow{font-size:12px;font-weight:700;letter-spacing:.22em;text-transform:uppercase;
@@ -694,12 +901,15 @@
   </svg>
 </div>
 
-<!-- ===== opening intro: side pictures change, logo centered ===== -->
-<div id="intro">
-  <svg id="introzig" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
-    <path d="M2,98 C30,72 14,54 46,50 C78,46 64,24 98,2" pathLength="1"/>
-  </svg>
-  <img class="intro__logo" src="media/logo.png" alt="DR.VET">
+<!-- ===== awwwards page transition + opening: grainy diagonal ribbon wipe ===== -->
+<div class="pt pt--reveal pt--light" id="pageTransition" aria-hidden="true">
+  <div class="pt__panel pt__panel--1"></div>
+  <div class="pt__panel pt__panel--2"></div>
+  <div class="pt__panel pt__panel--3"></div>
+  <div class="pt__mark">
+    <img src="media/logo.png" alt="">
+    <span class="pt__line"></span>
+  </div>
 </div>
 
 <!-- rounded house clip-path (responsive via objectBoundingBox) -->
@@ -711,54 +921,70 @@
   </defs>
 </svg>
 
-<!-- full top header: all nav elements (no burger) -->
+<!-- top header: logo + Registruokitės + burger (everything else in the burger panel) -->
 <header class="site-nav at-top">
-  <div class="nav-bar site-nav__top">
-    <ul class="nav-utility">
-      <li><a href="https://drvet.lt/apie-mus/"><span class="grainy">Apie mus</span></a></li>
-      <li><a href="https://drvet.lt/kraujo-bankas/"><span class="grainy">Kraujo bankas</span></a></li>
-    </ul>
-    <div class="nav-utility__right">
-      <div class="nav-social">
-        <span class="grainy">Sekite mus:</span>
-        <a href="https://www.facebook.com/drvetlietuva1" target="_blank" rel="noopener" aria-label="Facebook"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M13.5 21v-7h2.3l.4-2.9h-2.7V9.2c0-.8.3-1.4 1.5-1.4h1.3V5.2c-.6-.1-1.4-.2-2.3-.2-2.3 0-3.8 1.4-3.8 3.9v2.2H7.8V14h2.1v7h3.6z"/></svg></a>
-        <a href="https://www.instagram.com/drvet_lietuva/" target="_blank" rel="noopener" aria-label="Instagram"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3.5" y="3.5" width="17" height="17" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17" cy="7" r="1.2" fill="currentColor" stroke="none"/></svg></a>
-        <a href="https://www.linkedin.com/company/drvet/" target="_blank" rel="noopener" aria-label="LinkedIn"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M6.94 7.5a1.94 1.94 0 1 1 0-3.88 1.94 1.94 0 0 1 0 3.88zM5.3 20.5h3.3V9.3H5.3v11.2zM10.6 9.3h3.16v1.53h.05c.44-.83 1.5-1.7 3.1-1.7 3.3 0 3.9 2.17 3.9 5v6.37h-3.3v-5.65c0-1.35-.02-3.08-1.88-3.08-1.88 0-2.17 1.47-2.17 2.98v5.75H10.6V9.3z"/></svg></a>
-        <a href="https://www.youtube.com/@DRVET1" target="_blank" rel="noopener" aria-label="YouTube"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M22 8.2a2.6 2.6 0 0 0-1.8-1.85C18.6 6 12 6 12 6s-6.6 0-8.2.35A2.6 2.6 0 0 0 2 8.2 27 27 0 0 0 1.7 12 27 27 0 0 0 2 15.8a2.6 2.6 0 0 0 1.8 1.85C5.4 18 12 18 12 18s6.6 0 8.2-.35A2.6 2.6 0 0 0 22 15.8 27 27 0 0 0 22.3 12 27 27 0 0 0 22 8.2zM10 14.8V9.2l4.8 2.8-4.8 2.8z"/></svg></a>
-      </div>
-      <a class="nav-odont" href="https://drvet.lt/odontologija/"><span class="grainy">Gyvūnų odontologijos centras</span></a>
+  <div class="site-nav__main">
+    <a class="nav-logo" href="https://drvet.lt/"><img src="media/logo.png" alt="DR.VET"></a>
+    <button class="nav-burger grain-bg" type="button" aria-label="Atidaryti meniu" aria-expanded="false" aria-controls="navPanel">
+      <span class="nav-burger__lines"><i></i><i></i></span>
+      <span class="nav-burger__label">Meniu</span>
+    </button>
+    <div class="nav-actions">
+      <a class="nav-reg" href="https://drvet.lt/registracija/"><span class="grainy">Registruokitės</span></a>
       <a class="nav-cart" href="https://drvet.lt/krepselis/" aria-label="Krepšelis">
         <svg viewBox="0 0 26.729 26.729" xmlns="http://www.w3.org/2000/svg"><g transform="translate(-1828.636 -15.636)"><path d="M28.422,8.509l-4.2-4.2A4.455,4.455,0,0,0,21.072,3H11.657A4.455,4.455,0,0,0,8.509,4.307l-4.2,4.2A4.455,4.455,0,0,0,3,11.657V25.274a4.455,4.455,0,0,0,4.455,4.455H25.274a4.455,4.455,0,0,0,4.455-4.455V11.657a4.455,4.455,0,0,0-1.307-3.148ZM10.6,6.4a1.559,1.559,0,0,1,1.054-.431h9.415a1.559,1.559,0,0,1,1.054.431L24.665,8.94H8.064ZM25.274,26.759H7.455A1.485,1.485,0,0,1,5.97,25.274V11.91H26.759V25.274A1.485,1.485,0,0,1,25.274,26.759Z" transform="translate(1825.636 12.636)" fill="currentColor"/><path d="M18.395,11a1.485,1.485,0,0,0-1.485,1.485,2.97,2.97,0,1,1-5.94,0,1.485,1.485,0,1,0-2.97,0,5.94,5.94,0,0,0,11.88,0A1.485,1.485,0,0,0,18.395,11Z" transform="translate(1828.061 16.515)" fill="currentColor"/></g></svg>
       </a>
     </div>
   </div>
-  <div class="site-nav__main">
+</header>
+
+<!-- burger menu -->
+<div class="nav-overlay" data-nav-close></div>
+<aside class="nav-panel grain-bg" id="navPanel" aria-hidden="true">
+  <span class="nav-panel__deco" aria-hidden="true"></span>
+  <div class="nav-panel__head">
     <a class="nav-logo" href="https://drvet.lt/"><img src="media/logo.png" alt="DR.VET"></a>
-    <nav class="nav-bar nav-pill" aria-label="Pagrindinis meniu">
-    <ul class="nav-main">
+    <button class="nav-panel__close" type="button" aria-label="Uždaryti meniu" data-nav-close></button>
+  </div>
+  <nav aria-label="Pagrindinis meniu">
+    <ul class="nav-panel__links">
       <li class="has-child">
-        <span class="list-name"><a href="https://drvet.lt/musu-klinikos/"><span class="grainy">Mūsų klinikos</span></a><span class="chevron"><svg viewBox="0 0 11.018 6.509" xmlns="http://www.w3.org/2000/svg"><path d="M-17970.834,597.281l4.094,4.095,4.1-4.095" transform="translate(17972.248 -595.867)" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/></svg></span></span>
+        <span class="list-name"><a href="https://drvet.lt/musu-klinikos/">Mūsų klinikos</a><button class="nav-sub-toggle" type="button" aria-label="Išskleisti" aria-expanded="false"></button></span>
         <div class="nav-dropdown"><ul>
-          <li><a href="https://drvet.lt/apie-mus/"><span class="grainy">Apie mus</span></a></li>
-          <li><a href="https://drvet.lt/karjera/"><span class="grainy">Karjera ir darbo pasiūlymai</span></a></li>
-          <li><a href="https://drvet.lt/lojalumo-programa/"><span class="grainy">Lojalumo programa</span></a></li>
-          <li><a href="https://drvet.lt/musu-partneriai/"><span class="grainy">Mūsų partneriai</span></a></li>
-          <li><a href="https://drvet.lt/socialines-atsakomybes/"><span class="grainy">Socialinės atsakomybės</span></a></li>
+          <li><a href="https://drvet.lt/apie-mus/">Apie mus</a></li>
+          <li><a href="https://drvet.lt/karjera/">Karjera ir darbo pasiūlymai</a></li>
+          <li><a href="https://drvet.lt/lojalumo-programa/">Lojalumo programa</a></li>
+          <li><a href="https://drvet.lt/musu-partneriai/">Mūsų partneriai</a></li>
+          <li><a href="https://drvet.lt/socialines-atsakomybes/">Socialinės atsakomybės</a></li>
         </ul></div>
       </li>
-      <li><a href="https://drvet.lt/specialistai/"><span class="grainy">Specialistai</span></a></li>
-      <li><a href="https://drvet.lt/paslaugos/"><span class="grainy">Paslaugos</span></a></li>
-      <li><a href="https://drvet.lt/planai/"><span class="grainy">Sveikatos planai</span></a></li>
-      <li><a href="https://drvet.lt/kainorastis/"><span class="grainy">Kainoraštis</span></a></li>
-      <li><a href="https://drvet.lt/atsiliepimai/"><span class="grainy">Atsiliepimai</span></a></li>
-      <li><a href="https://drvet.lt/pasiulymai/"><span class="grainy">Tik pas mus</span></a></li>
-      <li><a href="https://drvet.lt/patarimai/"><span class="grainy">Patarimai</span></a></li>
-      <li><a href="https://drvet.lt/kontaktai/"><span class="grainy">Kontaktai</span></a></li>
+      <li><a href="https://drvet.lt/specialistai/">Specialistai</a></li>
+      <li><a href="https://drvet.lt/paslaugos/">Paslaugos</a></li>
+      <li><a href="https://drvet.lt/planai/">Sveikatos planai</a></li>
+      <li><a href="https://drvet.lt/kainorastis/">Kainoraštis</a></li>
+      <li><a href="https://drvet.lt/atsiliepimai/">Atsiliepimai</a></li>
+      <li><a href="https://drvet.lt/pasiulymai/">Tik pas mus</a></li>
+      <li><a href="https://drvet.lt/patarimai/">Patarimai</a></li>
+      <li><a href="https://drvet.lt/kontaktai/">Kontaktai</a></li>
     </ul>
-    </nav>
-    <a class="nav-reg" href="https://drvet.lt/registracija/"><span class="grainy">Registruokitės</span></a>
+  </nav>
+  <div class="nav-panel__util">
+    <ul>
+      <li><a href="https://drvet.lt/apie-mus/">Apie mus</a></li>
+      <li><a href="https://drvet.lt/kraujo-bankas/">Kraujo bankas</a></li>
+      <li><a href="https://drvet.lt/odontologija/">Gyvūnų odontologijos centras</a></li>
+    </ul>
+    <div class="nav-panel__social">
+      <a href="https://www.facebook.com/drvetlietuva1" target="_blank" rel="noopener" aria-label="Facebook"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M13.5 21v-7h2.3l.4-2.9h-2.7V9.2c0-.8.3-1.4 1.5-1.4h1.3V5.2c-.6-.1-1.4-.2-2.3-.2-2.3 0-3.8 1.4-3.8 3.9v2.2H7.8V14h2.1v7h3.6z"/></svg></a>
+      <a href="https://www.instagram.com/drvet_lietuva/" target="_blank" rel="noopener" aria-label="Instagram"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3.5" y="3.5" width="17" height="17" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17" cy="7" r="1.2" fill="currentColor" stroke="none"/></svg></a>
+      <a href="https://www.linkedin.com/company/drvet/" target="_blank" rel="noopener" aria-label="LinkedIn"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M6.94 7.5a1.94 1.94 0 1 1 0-3.88 1.94 1.94 0 0 1 0 3.88zM5.3 20.5h3.3V9.3H5.3v11.2zM10.6 9.3h3.16v1.53h.05c.44-.83 1.5-1.7 3.1-1.7 3.3 0 3.9 2.17 3.9 5v6.37h-3.3v-5.65c0-1.35-.02-3.08-1.88-3.08-1.88 0-2.17 1.47-2.17 2.98v5.75H10.6V9.3z"/></svg></a>
+      <a href="https://www.youtube.com/@DRVET1" target="_blank" rel="noopener" aria-label="YouTube"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M22 8.2a2.6 2.6 0 0 0-1.8-1.85C18.6 6 12 6 12 6s-6.6 0-8.2.35A2.6 2.6 0 0 0 2 8.2 27 27 0 0 0 1.7 12 27 27 0 0 0 2 15.8a2.6 2.6 0 0 0 1.8 1.85C5.4 18 12 18 12 18s6.6 0 8.2-.35A2.6 2.6 0 0 0 22 15.8 27 27 0 0 0 22.3 12 27 27 0 0 0 22 8.2zM10 14.8V9.2l4.8 2.8-4.8 2.8z"/></svg></a>
+      <a class="nav-cart" href="https://drvet.lt/krepselis/" aria-label="Krepšelis">
+        <svg viewBox="0 0 26.729 26.729" xmlns="http://www.w3.org/2000/svg"><g transform="translate(-1828.636 -15.636)"><path d="M28.422,8.509l-4.2-4.2A4.455,4.455,0,0,0,21.072,3H11.657A4.455,4.455,0,0,0,8.509,4.307l-4.2,4.2A4.455,4.455,0,0,0,3,11.657V25.274a4.455,4.455,0,0,0,4.455,4.455H25.274a4.455,4.455,0,0,0,4.455-4.455V11.657a4.455,4.455,0,0,0-1.307-3.148ZM10.6,6.4a1.559,1.559,0,0,1,1.054-.431h9.415a1.559,1.559,0,0,1,1.054.431L24.665,8.94H8.064ZM25.274,26.759H7.455A1.485,1.485,0,0,1,5.97,25.274V11.91H26.759V25.274A1.485,1.485,0,0,1,25.274,26.759Z" transform="translate(1825.636 12.636)" fill="currentColor"/><path d="M18.395,11a1.485,1.485,0,0,0-1.485,1.485,2.97,2.97,0,1,1-5.94,0,1.485,1.485,0,1,0-2.97,0,5.94,5.94,0,0,0,11.88,0A1.485,1.485,0,0,0,18.395,11Z" transform="translate(1828.061 16.515)" fill="currentColor"/></g></svg>
+      </a>
+    </div>
   </div>
-</header>
+</aside>
 
 <!-- scattered bones + wool (drift with cursor) -->
 <div class="scatter" data-depth="40" style="top:14%;left:6%"><svg class="bone" viewBox="0 0 100 40" fill="currentColor" style="transform:rotate(-18deg)"><circle cx="14" cy="13" r="9"/><circle cx="14" cy="27" r="9"/><circle cx="86" cy="13" r="9"/><circle cx="86" cy="27" r="9"/><rect x="13" y="12" width="74" height="16" rx="8"/></svg></div>
@@ -771,11 +997,15 @@
 
 <section class="hero">
   <div class="hero__media">
-    <video class="hero__video" autoplay muted loop playsinline poster="media/hero_poster.jpg">
-      <source src="media/hero.webm" type="video/webm">
-      <source src="media/hero.mp4" type="video/mp4">
-    </video>
-    <div class="hero__grain"></div>
+    <div class="bubble bubble--main">
+      <video class="hero__video" autoplay muted loop playsinline poster="media/hero_poster.jpg">
+        <source src="media/hero.webm" type="video/webm">
+        <source src="media/hero.mp4" type="video/mp4">
+      </video>
+      <div class="hero__grain"></div>
+    </div>
+    <div class="bubble bubble--a"><img src="media/lab.png" alt=""></div>
+    <div class="bubble bubble--b"><img src="media/specialistai.png" alt=""></div>
   </div>
 
   <h1 class="hero__heading">
@@ -869,7 +1099,7 @@
 <footer class="site-footer grain-bg">
   <div class="foot-top">
     <div class="foot-brand">
-      <h2 class="grainy">DR.<b>VET</b> — veterinarijos klinika</h2>
+      <img class="foot-logo" src="media/logo.png" alt="DR.VET — veterinarijos klinika">
       <p>DR.VET – pažangus veterinarijos klinikų tinklas, kuriame Jūsų laukia platus profesionalių paslaugų spektras ir patyrę įvairių veterinarijos sričių specialistai.</p>
       <div class="foot-eyebrow">Sekite mus</div>
       <div class="foot-social">
@@ -930,7 +1160,7 @@ window.addEventListener('load',()=>window.scrollTo(0,0));
 (function(){
   if(!window.gsap || !window.ScrollTrigger) return;
   gsap.registerPlugin(ScrollTrigger);
-  const items = gsap.utils.toArray('.foot-brand h2, .foot-brand p, .foot-eyebrow, .foot-social, .foot-nav a, .foot-disclaimer, .foot-bottom');
+  const items = gsap.utils.toArray('.foot-logo, .foot-brand p, .foot-eyebrow, .foot-social, .foot-nav a, .foot-disclaimer, .foot-bottom');
   gsap.from(items, {
     y:36, opacity:0, duration:.9, ease:'expo.out', stagger:.05,
     scrollTrigger:{ trigger:'.site-footer', start:'top 78%' }
@@ -964,6 +1194,37 @@ window.addEventListener('load',()=>window.scrollTo(0,0));
   update();
   addEventListener('scroll', update, {passive:true});
   if(window.__lenis) window.__lenis.on('scroll', update);
+})();
+
+// ===== burger menu: open/close the slide-in panel =====
+(function(){
+  const burger = document.querySelector('.nav-burger');
+  const panel  = document.querySelector('.nav-panel');
+  if(!burger || !panel) return;
+  const open = ()=>{
+    document.body.classList.add('menu-open');
+    burger.setAttribute('aria-expanded','true');
+    panel.setAttribute('aria-hidden','false');
+    if(window.__lenis) window.__lenis.stop();
+  };
+  const close = ()=>{
+    document.body.classList.remove('menu-open');
+    burger.setAttribute('aria-expanded','false');
+    panel.setAttribute('aria-hidden','true');
+    if(window.__lenis) window.__lenis.start();
+  };
+  burger.addEventListener('click', open);
+  document.querySelectorAll('[data-nav-close]').forEach(el=>el.addEventListener('click', close));
+  // + toggles that expand/collapse sub-points
+  panel.querySelectorAll('.nav-sub-toggle').forEach(btn=>btn.addEventListener('click', e=>{
+    e.preventDefault();
+    const li = btn.closest('.has-child');
+    const isOpen = li.classList.toggle('open');
+    btn.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+  }));
+  // close when a link inside the panel is clicked, or on Escape
+  panel.querySelectorAll('a').forEach(a=>a.addEventListener('click', close));
+  addEventListener('keydown', e=>{ if(e.key==='Escape' && document.body.classList.contains('menu-open')) close(); });
 })();
 
 // ===== grainy scroll spine: global line spanning the whole page (hero -> footer) =====
@@ -1054,18 +1315,7 @@ function heroAnims(){
     .add(heroText, 0.35);
 }
 
-// ===== intro: 3 sideways strokes draw in, then the whole intro fades to reveal the page =====
-function runIntro(){
-  if(!window.gsap){ const i=document.getElementById('intro'); if(i) i.remove(); return; }
-  const tl = gsap.timeline();
-  tl.to('#introzig',{'--w':'110%', duration:1.2, ease:'power2.inOut'}, 0.2)
-    .to('#intro',{opacity:0, duration:.6, ease:'power2.out'}, '+=0.2')
-    .set('#intro',{display:'none'})
-    .add(heroAnims);   // page content reveals as the zigzag-intro fades
-}
-// run as soon as the DOM is ready — do NOT wait for the video to finish loading
-if(document.readyState==='loading'){ document.addEventListener('DOMContentLoaded', runIntro); }
-else { runIntro(); }
+// the opening is now driven by the page-transition ribbon wipe (see the .pt block below)
 
 // scattered bones + wool: drift with the cursor + smooth idle levitation
 (function(){
@@ -1097,6 +1347,81 @@ else { runIntro(); }
     });
     requestAnimationFrame(loop);
   })(0);
+})();
+
+// ===== awwwards page transition: grainy ribbon wipe on navigation =====
+(function(){
+  const pt = document.getElementById('pageTransition');
+  const html = document.documentElement;
+  if(!pt || !window.gsap){
+    html.classList.remove('pt-loading');     // never leave the page hidden
+    if(pt) pt.style.display = 'none';
+    return;
+  }
+  const panels = pt.querySelectorAll('.pt__panel');
+  const mark = pt.querySelector('.pt__mark');
+  const line = pt.querySelector('.pt__line');
+  let busy = false;
+
+  // opening: same ribbon wipe as navigation, played as the entrance, then the hero animates in
+  function opening(){
+    pt.classList.add('pt--reveal');
+    pt.style.pointerEvents = 'all';
+    gsap.set(panels,{'--w':'-15%'});                 // solid cover
+    gsap.set(mark,{opacity:1, scale:1, y:0});
+    gsap.set(line,{scaleX:1});
+    gsap.set('.hero__media',{y:60, scale:.9, opacity:0});      // keep hero hidden behind the cover
+    gsap.set('.hero__desc, .hero__btn',{opacity:0, y:28});
+    gsap.timeline({onComplete:()=>{ pt.style.pointerEvents='none'; html.classList.remove('pt-loading'); }})
+      .to(mark,{opacity:0, y:-14, duration:.34, ease:'power2.in'}, .55)
+      .to(panels,{'--w':'120%', duration:.8, ease:'power3.inOut', stagger:.1}, .6)
+      .add(heroAnims, '-=0.5');                       // hero rises in as the ribbon clears
+  }
+
+  function cover(href){
+    if(busy) return; busy = true;
+    pt.classList.remove('pt--reveal');
+    pt.classList.remove('pt--light');   // outbound wipe stays dark/dramatic
+    pt.style.pointerEvents = 'all';
+    gsap.set(panels,{'--w':'-15%'});
+    gsap.set(mark,{opacity:0, scale:.92, y:16});
+    gsap.set(line,{scaleX:0});
+    gsap.timeline({onComplete:()=>{ window.location.href = href; }})
+      .to(panels,{'--w':'120%', duration:.72, ease:'power3.inOut', stagger:.09}, 0)
+      .to(mark,{opacity:1, scale:1, y:0, duration:.45, ease:'power2.out'}, .22)
+      .to(line,{scaleX:1, duration:.5, ease:'power3.out'}, .3);
+  }
+
+  function reveal(){
+    pt.classList.add('pt--reveal');
+    pt.style.pointerEvents = 'all';
+    gsap.set(panels,{'--w':'-15%'});            // solid (still covering) in reveal mode
+    gsap.set(mark,{opacity:1, scale:1, y:0});
+    gsap.set(line,{scaleX:1});
+    gsap.timeline({onComplete:()=>{ pt.style.pointerEvents='none'; busy=false; }})
+      .to(mark,{opacity:0, y:-14, duration:.32, ease:'power2.in'}, 0)
+      .to(panels,{'--w':'120%', duration:.72, ease:'power3.inOut', stagger:.09}, .06);
+  }
+
+  // intercept same-tab navigations and play the wipe first
+  document.addEventListener('click', e=>{
+    if(e.defaultPrevented || e.button!==0 || e.metaKey||e.ctrlKey||e.shiftKey||e.altKey) return;
+    const a = e.target.closest('a[href]');
+    if(!a) return;
+    if(a.target==='_blank' || a.hasAttribute('download')) return;
+    const href = a.getAttribute('href');
+    if(/^(mailto:|tel:|javascript:)/i.test(href) || href.charAt(0)==='#') return;
+    // in-page anchor on the same document -> let it scroll normally
+    if(a.href.split('#')[0] === location.href.split('#')[0] && href.includes('#')) return;
+    e.preventDefault();
+    cover(a.href);
+  }, true);
+
+  // returning via back/forward (bfcache) restores the page mid-cover -> sweep it away
+  window.addEventListener('pageshow', e=>{ if(e.persisted) reveal(); });
+
+  // play the opening on first load
+  opening();
 })();
 </script>
 </body>
