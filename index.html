@@ -1,0 +1,1125 @@
+<!DOCTYPE html>
+<html lang="lt">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DR.VET</title>
+<meta name="description" content="Pažangi veterinarija. Visom keturiom.">
+
+<!-- Fraunces: Recoleta-like warm serif with full Lithuanian glyph coverage -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;1,9..144,400&display=swap" rel="stylesheet">
+<!-- Manrope: free geometric sans-serif (Hellix-like) for the header -->
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;600;700&display=swap" rel="stylesheet">
+
+<!-- GSAP -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+<!-- Lenis smooth scroll -->
+<script src="https://unpkg.com/lenis@1.1.14/dist/lenis.min.js"></script>
+
+<style>
+  :root{ --r:clamp(16px,2.2vw,30px); }
+  *{margin:0;padding:0;box-sizing:border-box}
+  html,body{height:100%}
+  /* Lenis smooth scroll */
+  html.lenis,html.lenis body{height:auto}
+  .lenis.lenis-smooth{scroll-behavior:auto!important}
+  .lenis.lenis-stopped{overflow:hidden}
+  body{
+    background:#ffffff;
+    overflow-x:hidden;
+    font-family:'Fraunces','Times New Roman',serif;
+    -webkit-font-smoothing:antialiased;
+    cursor:none;
+  }
+
+  /* ===== tennis ball cursor ===== */
+  .cursor{
+    position:fixed;top:0;left:0;width:38px;height:38px;z-index:99999;
+    pointer-events:none;transform:translate(-50%,-50%);
+    transition:width .25s ease,height .25s ease;
+  }
+  .cursor__ball{width:100%;height:100%;transform-origin:50% 50%}
+  .cursor.spin .cursor__ball{animation:ballspin .7s linear infinite}
+  .cursor.spin{width:56px;height:56px}
+  @keyframes ballspin{to{transform:rotate(360deg)}}
+
+  /* global grain over the WHOLE page — textures every element */
+  .page-grain{
+    position:fixed;inset:0;z-index:9990;pointer-events:none;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='p'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23p)'/%3E%3C/svg%3E");
+    background-size:200px 200px;background-repeat:repeat;
+    mix-blend-mode:overlay;opacity:.5;
+  }
+  @media (hover:none){.cursor{display:none} body{cursor:auto}}
+
+  /* ===== opening intro: white bg, a zigzag line draws corner -> middle -> on, logo centred, then fade ===== */
+  #intro{
+    position:fixed;inset:0;z-index:9999;overflow:hidden;background:#fff;
+    display:flex;align-items:center;justify-content:center;
+  }
+  #introzig{
+    position:absolute;inset:0;width:100%;height:100%;--w:-8%;
+    /* draw wipe (bottom-left -> top-right) INTERSECTED with the page grain */
+    -webkit-mask-image:
+      linear-gradient(to top right,#000 0%,#000 var(--w),transparent calc(var(--w) + 8%)),
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='s'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeComponentTransfer%3E%3CfeFuncA type='table' tableValues='0.15 1 0.35 1'/%3E%3C/feComponentTransfer%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23s)'/%3E%3C/svg%3E");
+    mask-image:
+      linear-gradient(to top right,#000 0%,#000 var(--w),transparent calc(var(--w) + 8%)),
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='s'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeComponentTransfer%3E%3CfeFuncA type='table' tableValues='0.15 1 0.35 1'/%3E%3C/feComponentTransfer%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23s)'/%3E%3C/svg%3E");
+    -webkit-mask-size:100% 100%,120px 120px;mask-size:100% 100%,120px 120px;
+    -webkit-mask-repeat:no-repeat,repeat;mask-repeat:no-repeat,repeat;
+    -webkit-mask-composite:source-in;mask-composite:intersect;
+  }
+  #introzig path{
+    fill:none;stroke:#ff6b35;stroke-width:clamp(120px,18vw,270px);   /* 3x thicker */
+    stroke-linecap:round;stroke-linejoin:round;vector-effect:non-scaling-stroke;
+  }
+  .intro__logo{
+    position:absolute;top:50%;left:50%;z-index:5;transform:translate(-50%,-50%);   /* highest, in the middle */
+    height:clamp(20px,3vw,42px);width:auto;
+    background:#fff;padding:12px 18px;border-radius:999px;
+  }
+
+  /* transparent header — logo left, menu right */
+  .logo-header{
+    position:fixed;top:0;left:0;width:100%;z-index:1000;
+    display:flex;align-items:center;justify-content:space-between;gap:24px;
+    padding:clamp(22px,4vh,44px) clamp(22px,5vw,60px);
+    background:transparent;
+  }
+  .logo-header img{height:clamp(14px,1.5vw,21px);width:auto;display:block}
+  /* "Meniu" text button */
+  .menu-btn{
+    pointer-events:auto;position:relative;z-index:1100;
+    background:none;border:0;cursor:pointer;padding:4px 0;
+    font-family:'Fraunces',Georgia,serif;   /* same font as the h1 */
+    font-size:clamp(16px,1.4vw,22px);font-weight:600;letter-spacing:0;text-transform:none;
+    color:#0c1413;
+    display:inline-grid;   /* stack both labels in one cell */
+  }
+  .menu-btn span{grid-area:1/1;transition:opacity .3s,color .3s}
+  .menu-btn__close{opacity:0}
+  body.menu-open .menu-btn{color:#fff}
+  body.menu-open .menu-btn__open{opacity:0}
+  body.menu-open .menu-btn__close{opacity:1}
+
+  /* side drawer menu sliding from the right */
+  .menu-overlay{
+    position:fixed;top:clamp(10px,1.4vw,20px);right:clamp(10px,1.4vw,20px);
+    bottom:clamp(10px,1.4vw,20px);z-index:900;
+    width:min(82vw,440px);background:#0a5f66;   /* dark cyan */
+    border-radius:clamp(22px,2.2vw,38px);
+    display:flex;align-items:center;
+    transform:scale(0);transform-origin:top right;   /* grows from the button corner */
+    transition:transform .7s cubic-bezier(.76,0,.24,1);
+    pointer-events:none;
+  }
+  body.menu-open .menu-overlay{transform:scale(1);pointer-events:auto}
+  .menu-overlay ul{
+    list-style:none;display:flex;flex-direction:column;gap:clamp(4px,1vh,12px);
+    padding:0 clamp(34px,6vw,64px);width:100%;
+  }
+  .menu-overlay li{overflow:visible}
+  .menu-overlay a{
+    position:relative;display:inline-block;text-decoration:none;color:#fff;overflow:visible;
+    font-family:'Fraunces',Georgia,serif;font-weight:600;letter-spacing:-.02em;
+    font-size:clamp(28px,4.4vw,50px);line-height:1.12;
+  }
+  .menu-overlay .mi{display:block;overflow:hidden}   /* clip just for the rise reveal */
+  .menu-overlay a .grainy{
+    display:inline-block;transform:translateY(110%);opacity:0;
+    transition:transform .6s cubic-bezier(.76,0,.24,1),opacity .6s,color .3s;
+  }
+  body.menu-open .menu-overlay a .grainy{transform:translateY(0);opacity:1}
+  body.menu-open .menu-overlay li:nth-child(1) .grainy{transition-delay:.12s}
+  body.menu-open .menu-overlay li:nth-child(2) .grainy{transition-delay:.17s}
+  body.menu-open .menu-overlay li:nth-child(3) .grainy{transition-delay:.22s}
+  body.menu-open .menu-overlay li:nth-child(4) .grainy{transition-delay:.27s}
+  body.menu-open .menu-overlay li:nth-child(5) .grainy{transition-delay:.32s}
+  body.menu-open .menu-overlay li:nth-child(6) .grainy{transition-delay:.37s}
+  body.menu-open .menu-overlay li:nth-child(7) .grainy{transition-delay:.42s}
+  body.menu-open .menu-overlay li:nth-child(8) .grainy{transition-delay:.47s}
+  body.menu-open .menu-overlay li:nth-child(9) .grainy{transition-delay:.52s}
+  .menu-overlay a:hover .grainy{color:#ff6b35}
+  .menu-overlay__reg a .grainy{color:#ff6b35;font-style:italic}
+  .menu-overlay__reg a:hover .grainy{color:#fff}
+  /* hand-drawn orange grainy underline that wipes in on hover */
+  .menu-overlay .uline{
+    position:absolute;left:0;bottom:-.04em;width:100%;height:.3em;overflow:visible;pointer-events:none;
+    transform:scaleX(0);transform-origin:left center;
+    transition:transform .55s cubic-bezier(.76,0,.24,1);
+    -webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='90' height='90'%3E%3Cfilter id='u'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeComponentTransfer%3E%3CfeFuncA type='table' tableValues='0.15 1 0.35 1'/%3E%3C/feComponentTransfer%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23u)'/%3E%3C/svg%3E") 0 0/90px 90px repeat;
+    mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='90' height='90'%3E%3Cfilter id='u'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeComponentTransfer%3E%3CfeFuncA type='table' tableValues='0.15 1 0.35 1'/%3E%3C/feComponentTransfer%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23u)'/%3E%3C/svg%3E") 0 0/90px 90px repeat;
+  }
+  .menu-overlay a:hover .uline{transform:scaleX(1)}
+  .menu-overlay .uline path{fill:none;stroke:#ff6b35;stroke-width:13;stroke-linecap:round;
+    stroke-linejoin:round;vector-effect:non-scaling-stroke}
+
+  /* preview picture filling the page left of the drawer, on menu-link hover */
+  .menu-preview{
+    position:fixed;z-index:901;
+    left:clamp(10px,1.4vw,20px);top:clamp(10px,1.4vw,20px);bottom:clamp(10px,1.4vw,20px);
+    right:calc(min(82vw,440px) + clamp(22px,3vw,42px));
+    border-radius:clamp(22px,2.2vw,38px);
+    overflow:hidden;opacity:0;pointer-events:none;
+    transform:scale(1.04);
+    transition:opacity .6s cubic-bezier(.76,0,.24,1),transform .8s cubic-bezier(.76,0,.24,1);
+  }
+  .menu-preview img{width:100%;height:100%;object-fit:cover;border-radius:inherit}
+  .menu-preview::after{
+    content:"";position:absolute;inset:0;z-index:2;pointer-events:none;border-radius:inherit;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='mp'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23mp)'/%3E%3C/svg%3E");
+    background-size:200px 200px;background-repeat:repeat;
+    mix-blend-mode:overlay;opacity:.55;
+  }
+  body.menu-open:has(.menu-overlay a:hover) .menu-preview{
+    opacity:1;transform:scale(1);
+  }
+
+  /* ===== full top header (all nav elements, no burger) ===== */
+  .site-nav{
+    position:fixed;top:clamp(8px,1.3vw,16px);left:clamp(14px,3vw,48px);right:clamp(14px,3vw,48px);
+    z-index:1000;font-family:'Manrope','Helvetica Neue',Arial,sans-serif;color:#0c1413;--accent:#ff6b35;
+    display:flex;flex-direction:column;gap:clamp(6px,.8vw,12px);   /* two separate stacked pills */
+    transition:transform .45s cubic-bezier(.76,0,.24,1);
+  }
+  .site-nav.nav-hidden{transform:translateY(-150%)}   /* hides when scrolling down */
+  /* each bar is its own rounded, grainy dark-cyan pill */
+  .nav-bar{
+    position:relative;isolation:isolate;border-radius:clamp(16px,1.8vw,28px);
+    background:transparent;border:1px solid rgba(12,20,19,.08);
+    transition:border-color .4s ease;
+  }
+  /* grainy fill using the EXACT veterinarija noise as a MASK -> keeps its transparent speckle */
+  .nav-bar::before{
+    content:"";position:absolute;inset:0;z-index:-1;pointer-events:none;border-radius:inherit;
+    background:#fff;   /* plain white bar (no grain) */
+    transition:background .4s ease;
+  }
+  .site-nav a{text-decoration:none;color:#0c1413;transition:color .25s}
+  .site-nav .grainy{-webkit-mask-image:none;mask-image:none}   /* header text crisp (no grain) */
+  .site-nav a:hover{color:var(--accent)}
+  .site-nav ul{list-style:none;margin:0;padding:0}
+  .nav-social{color:#5b6663}
+  .nav-social a{color:#0c1413;display:inline-flex}
+  .nav-social a svg{width:17px;height:17px;display:block}
+  .nav-cart{color:#0c1413}
+  /* white when at the very top of the page */
+  /* top utility row */
+  .site-nav__top{
+    order:1;align-self:center;   /* lowered below the main bar, centered */
+    display:flex;align-items:center;justify-content:flex-start;gap:clamp(10px,1.4vw,18px);
+    padding:9px clamp(20px,2.6vw,34px);font-size:15px;white-space:nowrap;   /* all items on one line */
+  }
+  .nav-utility{display:flex;gap:22px}
+  .nav-utility__right{display:flex;align-items:center;gap:clamp(14px,2vw,28px)}
+  .nav-social{display:flex;align-items:center;gap:14px;font-size:12px}
+  .nav-social span{opacity:.7}
+  .nav-odont{font-weight:600}
+  .nav-cart{display:inline-flex;color:#0c1413}
+  .nav-cart svg{width:22px;height:22px}
+  /* main row */
+  /* main row: logo + nav pill + button, logo & button OUTSIDE the pill */
+  .site-nav__main{
+    display:flex;align-items:center;justify-content:space-between;gap:clamp(12px,2vw,28px);
+  }
+  .nav-pill{padding:16px clamp(26px,3.2vw,48px)}   /* the rounded box holds only the links */
+  .nav-logo img{height:clamp(20px,2vw,30px);width:auto;display:block}
+  .nav-main{display:flex;align-items:center;gap:clamp(12px,1.5vw,26px);flex-wrap:wrap}
+  .nav-main>li{position:relative}
+  .nav-main>li>a,.nav-main .list-name>a{position:relative;font-size:clamp(13px,.9vw,15px);font-weight:600;letter-spacing:-.01em;white-space:nowrap}
+  .nav-main .list-name{display:inline-flex;align-items:center;gap:5px}
+  /* hand-drawn grainy orange underline that wipes in on hover (site aesthetic) */
+  .nav-main>li>a::after,.nav-main .list-name>a::after,.nav-utility a::after,.nav-odont::after{
+    content:"";position:absolute;left:-2px;right:-2px;bottom:-8px;height:9px;
+    background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 300 14' preserveAspectRatio='none'%3E%3Cpath d='M3,8 C40,13 70,3 102,7 C140,12 165,3 200,7 C240,12 268,3 297,7' fill='none' stroke='%23ff6b35' stroke-width='3.4' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") 0 0/100% 100% no-repeat;
+    transform:scaleX(0);transform-origin:left center;transition:transform .42s cubic-bezier(.76,0,.24,1);
+    -webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='90' height='90'%3E%3Cfilter id='u'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeComponentTransfer%3E%3CfeFuncA type='table' tableValues='0.15 1 0.35 1'/%3E%3C/feComponentTransfer%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23u)'/%3E%3C/svg%3E") 0 0/70px 70px repeat;
+    mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='90' height='90'%3E%3Cfilter id='u'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeComponentTransfer%3E%3CfeFuncA type='table' tableValues='0.15 1 0.35 1'/%3E%3C/feComponentTransfer%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23u)'/%3E%3C/svg%3E") 0 0/70px 70px repeat;
+  }
+  .nav-utility a,.nav-odont{position:relative}
+  .nav-main>li:hover>a::after,.nav-main .list-name:hover>a::after,.nav-utility a:hover::after,.nav-odont:hover::after{transform:scaleX(1)}
+  .nav-main .chevron svg{width:11px;height:7px;display:block;transition:transform .25s}
+  .nav-main li.has-child:hover .chevron svg{transform:rotate(180deg)}
+  /* dropdown */
+  .nav-dropdown{
+    position:absolute;top:100%;right:-18px;left:auto;min-width:236px;padding-top:14px;
+    opacity:0;visibility:hidden;transform:translateY(8px);
+    transition:opacity .25s,transform .25s,visibility .25s;z-index:10;
+  }
+  .nav-main li.has-child:hover .nav-dropdown{opacity:1;visibility:visible;transform:translateY(0)}
+  .nav-dropdown ul{
+    background:#fff;border-radius:16px;padding:14px 18px;display:flex;flex-direction:column;gap:11px;
+    box-shadow:0 24px 60px rgba(12,20,19,.16);border:1px solid rgba(12,20,19,.06);
+  }
+  .nav-dropdown ul{text-align:right}
+  .nav-dropdown a{font-size:14px;font-weight:500;white-space:nowrap}
+  /* registration button: outlined pill with arrow, fills orange on hover (adapts to bar colour) */
+  .nav-reg{
+    display:inline-flex;align-items:center;gap:8px;background:#ff6b35;color:#fff!important;
+    font-weight:600;font-size:clamp(14px,1vw,16px);padding:9px 20px;border-radius:999px;white-space:nowrap;
+    border:1.5px solid #ff6b35;transition:background .25s,color .25s,border-color .25s,transform .25s;
+  }
+  .nav-reg::after{content:"→";font-weight:600;line-height:1}
+  .nav-reg:hover{background:#e85a28;border-color:#e85a28;color:#fff!important;transform:translateY(-1px)}
+  @media(max-width:1180px){
+    .site-nav__top{display:none}
+    .site-nav__main{overflow-x:auto;flex-wrap:nowrap;scrollbar-width:none}
+    .site-nav__main::-webkit-scrollbar{display:none}
+    .nav-main{flex-wrap:nowrap}
+  }
+
+  /* scattered bones + wool that drift with the cursor */
+  .scatter{position:absolute;z-index:1;pointer-events:none;will-change:transform}
+  .scatter--behind{z-index:-1}   /* sits behind a section's own content, above the global line */
+  .scatter svg{display:block}
+  .scatter .bone{width:clamp(44px,5vw,84px);height:auto;color:#e3d2b4}
+  .scatter .wool{width:clamp(50px,6vw,96px);height:auto}
+
+  /* far-back decorative light-orange circle */
+  .bg-circle{
+    position:absolute;top:50%;left:50%;z-index:0;
+    width:150vmin;height:150vmin;border-radius:50%;
+    background:#f7a85c;
+    transform:translate(-50%,-50%);
+    pointer-events:none;
+  }
+
+  /* full screen stage: image centered, HUGE text centered over it */
+  .hero{
+    position:relative;z-index:2;width:100vw;height:100svh;
+    display:flex;align-items:center;justify-content:flex-end;
+    padding-right:clamp(22px,6vw,110px);
+  }
+
+  /* the image is centered, 2x smaller */
+  .hero__media{
+    position:relative;
+    width:37.5vw;height:75vh;flex-shrink:0;
+  }
+  .hero__video{
+    position:absolute;inset:0;width:100%;height:100%;
+    object-fit:cover;
+    /* house shape with rounded corners (SVG clip-path) */
+    clip-path:url(#houseRound);
+  }
+  /* HEAVY pencil grain over the video, clipped to the same house shape */
+  .hero__grain{
+    position:absolute;inset:0;z-index:2;pointer-events:none;clip-path:url(#houseRound);
+    background-image:
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.6' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3CfeComponentTransfer%3E%3CfeFuncR type='gamma' exponent='2.6'/%3E%3CfeFuncG type='gamma' exponent='2.6'/%3E%3CfeFuncB type='gamma' exponent='2.6'/%3E%3C/feComponentTransfer%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23g)'/%3E%3C/svg%3E"),
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='150' height='150'%3E%3Cfilter id='f'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='1.1' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23f)'/%3E%3C/svg%3E");
+    background-size:300px 300px, 150px 150px;background-repeat:repeat;
+    mix-blend-mode:overlay;opacity:.75;
+  }
+
+  /* HUGE heading centered over the image; blend keeps it legible everywhere */
+  .hero__heading{
+    position:absolute;inset:0;z-index:5;
+    display:flex;flex-direction:column;align-items:flex-start;justify-content:center;
+    text-align:left;
+    padding-left:clamp(22px,6vw,110px);
+    color:#0c1413;
+    font-weight:600;
+    letter-spacing:-.03em;
+    line-height:.85;
+    font-size:clamp(40px,8.5vw,150px);
+    pointer-events:none;
+  }
+  .hero__desc{
+    font-family:'Manrope','Helvetica Neue',Arial,sans-serif;
+    font-weight:500;font-size:clamp(15px,1.4vw,19px);line-height:1.7 !important;display:block;
+    letter-spacing:normal;word-spacing:normal;
+    color:#3a4543;width:clamp(280px,34vw,460px);max-width:90vw;margin-top:clamp(18px,2.4vh,30px);
+  }
+  .hero__btn{
+    pointer-events:auto;display:inline-flex;align-items:center;gap:14px;
+    margin-top:clamp(20px,2.6vh,32px);
+    font-family:'Manrope',sans-serif;font-weight:700;
+    font-size:13px;letter-spacing:.18em;text-transform:uppercase;
+    color:#0c1413;text-decoration:none;
+  }
+  .hero__btn .txt{position:relative;display:inline-block;padding-bottom:4px}
+  .hero__btn .txt::after{
+    content:"";position:absolute;left:0;bottom:0;width:100%;height:2px;
+    background:#ff6b35;transform:scaleX(0);transform-origin:right;
+    transition:transform .5s cubic-bezier(.76,0,.24,1);
+  }
+  .hero__btn:hover .txt::after{transform:scaleX(1);transform-origin:left}
+  .hero__btn .circ{
+    display:grid;place-items:center;flex-shrink:0;
+    width:42px;height:42px;border-radius:50%;border:1.5px solid #0c1413;
+    overflow:hidden;position:relative;
+    transition:border-color .5s cubic-bezier(.76,0,.24,1);
+  }
+  .hero__btn .circ::before{
+    content:"";position:absolute;inset:0;background:#ff6b35;border-radius:50%;
+    transform:scale(0);transition:transform .5s cubic-bezier(.76,0,.24,1);
+  }
+  .hero__btn .circ svg{position:relative;width:16px;height:16px;
+    transition:transform .5s cubic-bezier(.76,0,.24,1)}
+  .hero__btn:hover .circ{border-color:#ff6b35}
+  .hero__btn:hover .circ::before{transform:scale(1)}
+  .hero__btn:hover .circ svg{transform:translate(2px,-2px)}
+  .hero__btn:hover .circ svg path{stroke:#fff}
+  .hero__heading em{font-style:normal;color:#0a5f66;position:relative}  /* dark cyan / blue */
+  /* hand-drawn pencil underline that sweeps up under "veterinarija" */
+  .scribble{
+    position:absolute;z-index:20;opacity:0;--rev:-25%;
+    overflow:visible;pointer-events:none;   /* left/top/width/height set by JS */
+    /* dual mask: left→right fade wipe (driven by --rev) INTERSECTED with grain noise */
+    -webkit-mask-image:
+      linear-gradient(90deg,#000 0%,#000 var(--rev),transparent calc(var(--rev) + 24%)),
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='s'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeComponentTransfer%3E%3CfeFuncA type='table' tableValues='0.15 1 0.35 1'/%3E%3C/feComponentTransfer%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23s)'/%3E%3C/svg%3E");
+    -webkit-mask-size:auto, 120px 120px;
+    -webkit-mask-repeat:no-repeat, repeat;
+    -webkit-mask-composite:source-in;
+    mask-image:
+      linear-gradient(90deg,#000 0%,#000 var(--rev),transparent calc(var(--rev) + 24%)),
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='s'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeComponentTransfer%3E%3CfeFuncA type='table' tableValues='0.15 1 0.35 1'/%3E%3C/feComponentTransfer%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23s)'/%3E%3C/svg%3E");
+    mask-size:auto, 120px 120px;
+    mask-repeat:no-repeat, repeat;
+    mask-composite:intersect;
+  }
+  .scribble path{fill:none;stroke:#ff6b35;stroke-width:16;stroke-linecap:round;
+    stroke-linejoin:round;vector-effect:non-scaling-stroke}
+  .hero__heading .line{display:block;overflow:hidden;padding-bottom:.14em;margin-bottom:-.14em}
+  .hero__heading .line.line--uline{position:relative;padding-bottom:.55em;margin-bottom:-.55em}  /* room for the underline */
+  .hero__heading .line span{display:block} /* visible by default; GSAP sets start state */
+  /* grainy / pencil-shaded fill: noise texture punched through the letters as a mask */
+  .grainy{
+    -webkit-mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='2' stitchTiles='stitch'/%3E%3CfeComponentTransfer%3E%3CfeFuncA type='table' tableValues='0.22 1 0.4 1'/%3E%3C/feComponentTransfer%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='2' stitchTiles='stitch'/%3E%3CfeComponentTransfer%3E%3CfeFuncA type='table' tableValues='0.22 1 0.4 1'/%3E%3C/feComponentTransfer%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    -webkit-mask-size:200px 200px;mask-size:200px 200px;
+    -webkit-mask-repeat:repeat;mask-repeat:repeat;
+  }
+
+  /* grain texture overlay for dark panels (textures background + text together) */
+  .grain-bg::after{
+    content:"";position:absolute;inset:0;z-index:7;pointer-events:none;border-radius:inherit;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23g)'/%3E%3C/svg%3E");
+    background-size:200px 200px;background-repeat:repeat;
+    mix-blend-mode:overlay;opacity:.42;
+  }
+
+  /* ===== huge grainy scroll spine: fixed line that fills as you scroll hero -> footer ===== */
+  .scrollspine{
+    position:absolute;left:50%;transform:translateX(-50%);   /* centered, scrolls with the page */
+    width:clamp(300px,72vw,1000px);z-index:1;pointer-events:none;--rev:-8%;   /* low z: footer (z2) hides the line where they overlap */
+    /* top & height set by JS to span end-of-hero -> footer */
+  }
+  .scrollspine__fill{
+    display:block;width:100%;height:100%;overflow:visible;will-change:mask;
+    /* lightweight reveal: single top->bottom wipe with soft fading tip (no grain = far cheaper paint) */
+    -webkit-mask-image:linear-gradient(to bottom,transparent 0%,#000 4%,#000 var(--rev),transparent calc(var(--rev) + 12%));
+    mask-image:linear-gradient(to bottom,transparent 0%,#000 4%,#000 var(--rev),transparent calc(var(--rev) + 12%));
+    -webkit-mask-size:100% 100%;mask-size:100% 100%;
+    -webkit-mask-repeat:no-repeat;mask-repeat:no-repeat;
+  }
+  .scrollspine__fill path{
+    fill:none;stroke:#ff6b35;stroke-width:clamp(70px,10vw,150px);   /* thinner -> lighter paint */
+    stroke-linecap:round;stroke-linejoin:round;vector-effect:non-scaling-stroke;
+  }
+  @media (hover:none){.scrollspine{display:none}}
+  /* ===== first section after the hero: Mūsų klinikos ===== */
+  .klinikos{
+    position:relative;z-index:5;   /* above the global line */
+    display:grid;grid-template-columns:1.05fr .95fr;gap:clamp(32px,5vw,84px);
+    align-items:center;max-width:1680px;margin:0 auto;
+    padding:clamp(70px,14vh,180px) clamp(18px,3vw,48px) clamp(40px,8vh,90px);
+  }
+  .klinikos__text h2{
+    font-family:'Fraunces',Georgia,serif;font-weight:600;letter-spacing:-.02em;
+    font-size:clamp(44px,6.4vw,104px);line-height:.98;margin:0 0 .32em;color:#0c1413;
+  }
+  .klinikos__text p{
+    font-size:clamp(17px,1.55vw,25px);line-height:1.55;color:#33403e;
+    margin:0 0 clamp(24px,3vh,40px);max-width:46ch;
+  }
+  .klinikos__img{
+    position:relative;border-radius:clamp(18px,2.2vw,34px);overflow:hidden;
+    box-shadow:0 30px 80px rgba(12,20,19,.22);aspect-ratio:6/5;margin:0;
+  }
+  .klinikos__img img{display:block;width:100%;height:100%;object-fit:cover}
+  /* flipped variant: image left, text right */
+  .klinikos--rev .klinikos__text{order:2}
+  .klinikos--rev .klinikos__img{order:1}
+  /* grainy photo: heavy noise over the image, same texture family as the rest of the page */
+  .klinikos__img::after{
+    content:"";position:absolute;inset:0;pointer-events:none;border-radius:inherit;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23g)'/%3E%3C/svg%3E");
+    background-size:200px 200px;background-repeat:repeat;
+    mix-blend-mode:overlay;opacity:.7;
+  }
+  @media(max-width:780px){
+    .klinikos{grid-template-columns:1fr;gap:clamp(24px,5vh,40px);text-align:left}
+    .klinikos__img,.klinikos--rev .klinikos__img{order:-1;aspect-ratio:4/3}
+    .klinikos--rev .klinikos__text{order:0}
+  }
+
+  /* ===== PetsApp banner ===== */
+  .petsapp{position:relative;z-index:5;max-width:1680px;margin:clamp(50px,9vh,110px) auto;padding:0 clamp(18px,3vw,48px)}
+  .petsapp__card{
+    position:relative;overflow:hidden;border-radius:clamp(24px,3vw,46px);
+    background:linear-gradient(120deg,#3a39a4 0%,#4a52b0 100%);
+    display:grid;grid-template-columns:1fr;align-items:stretch;
+  }
+  .petsapp__text{padding:clamp(34px,5vw,74px);align-self:center}
+  .petsapp__text h2{
+    font-family:'Fraunces',Georgia,serif;font-weight:600;letter-spacing:-.02em;color:#fff;
+    font-size:clamp(40px,5.4vw,90px);line-height:1.0;margin:0 0 .42em;
+  }
+  .petsapp__text p{
+    color:rgba(255,255,255,.86);font-size:clamp(16px,1.4vw,22px);line-height:1.5;
+    max-width:44ch;margin:0 0 clamp(28px,4.5vh,56px);
+  }
+  .petsapp__label{
+    color:rgba(255,255,255,.8);font-family:'Manrope',sans-serif;font-weight:600;
+    font-size:13px;letter-spacing:.02em;margin:0 0 16px;
+  }
+  .petsapp__badges{display:flex;align-items:center;gap:clamp(14px,1.6vw,24px);flex-wrap:wrap}
+  .petsapp__badges img{display:block;height:clamp(46px,4.2vw,60px);width:auto}
+  .petsapp__badges a{display:inline-flex;transition:transform .25s}
+  .petsapp__badges a:hover{transform:translateY(-2px)}
+  .petsapp__phones{position:relative;overflow:hidden;display:flex;align-items:center}
+  .petsapp__phones img{
+    display:block;width:100%;height:auto;   /* natural proportions; the card height follows the image */
+    /* fade the left edge into the purple card so there's no hard seam */
+    -webkit-mask-image:linear-gradient(to right,transparent 0,#000 22%);
+    mask-image:linear-gradient(to right,transparent 0,#000 22%);
+  }
+  @media(max-width:820px){
+    .petsapp__card{grid-template-columns:1fr}
+  }
+
+  @media(max-width:680px){
+    .hero__media{width:88vw;height:40vh}
+    .hero__heading{font-size:clamp(48px,18vw,120px)}
+  }
+
+  /* ===== modern darker-orange header with cat behind the menu ===== */
+  .site-header{
+    position:fixed;top:clamp(12px,2vh,22px);left:50%;z-index:1000;
+    transform:translateX(-50%);
+    width:33.33vw;                     /* 3x narrower than full width */
+    background:#ffffff;                 /* white header */
+    box-shadow:0 8px 30px rgba(0,0,0,.08);
+    display:flex;align-items:center;justify-content:space-between;
+    padding:12px clamp(16px,1.6vw,26px);
+    border-radius:999px;               /* round pill */
+    overflow:hidden;
+    font-family:'Manrope','Helvetica Neue',Arial,sans-serif;
+  }
+  /* cat silhouette sitting BEHIND the menu (colored via mask) */
+  .site-header__cat{
+    position:absolute;top:50%;left:50%;
+    transform:translate(-50%,-46%);
+    height:150px;width:90px;z-index:0;opacity:.5;pointer-events:none;
+    background:#ffceae;                 /* soft orange watermark */
+    -webkit-mask:url(media/cat.png) center/contain no-repeat;
+    mask:url(media/cat.png) center/contain no-repeat;
+  }
+  .site-header .logo{
+    position:relative;z-index:2;
+    color:#0c1413;font-weight:700;font-size:22px;letter-spacing:-.03em;
+  }
+  .site-header .logo b{color:#ff6b35}
+  /* the side menu panel */
+  .sidemenu{
+    position:fixed;top:0;right:0;height:100%;z-index:2000;
+    width:min(46vw,560px);
+    background:#0c1413;color:#fff;
+    padding:clamp(40px,7vw,90px);
+    display:flex;flex-direction:column;justify-content:center;
+    transform:translateX(100%);
+    transition:transform .7s cubic-bezier(.76,0,.24,1);
+  }
+  .sidemenu.open{transform:translateX(0)}
+  .sidemenu__title{
+    font-family:'Manrope',sans-serif;font-size:13px;font-weight:700;
+    text-transform:uppercase;letter-spacing:.3em;color:#ff6b35;margin-bottom:30px;
+  }
+  .sidemenu__nav{display:flex;flex-direction:column;gap:clamp(6px,1.4vh,16px)}
+  .sidemenu__nav a{
+    font-family:'Fraunces',serif;font-weight:600;letter-spacing:-.02em;line-height:1;
+    font-size:clamp(44px,7vw,96px);color:#fff;
+    transition:color .3s,transform .4s cubic-bezier(.22,1,.36,1);
+  }
+  .sidemenu__nav a:hover{color:#ff6b35;transform:translateX(14px)}
+  .sidemenu__close{
+    position:absolute;top:clamp(22px,3vw,40px);right:clamp(22px,3vw,40px);
+    cursor:none;background:none;border:0;color:#fff;font-size:46px;line-height:1;
+  }
+  .sidemenu__close:hover{color:#ff6b35}
+  /* dim backdrop when open */
+  .menu-backdrop{
+    position:fixed;inset:0;z-index:1500;background:rgba(12,20,19,.45);
+    opacity:0;visibility:hidden;transition:opacity .5s,visibility .5s;
+  }
+  .menu-backdrop.show{opacity:1;visibility:visible}
+  @media(max-width:680px){ .sidemenu{width:100%} }
+  @media(max-width:900px){
+    .site-header{width:92vw}
+    .site-header nav ul{gap:14px;font-size:13px}
+    .site-header__cat{height:120px;opacity:.4}
+  }
+
+  /* ===== scrollable content sections ===== */
+  .section{position:relative;z-index:2;padding:clamp(70px,12vh,150px) clamp(22px,6vw,110px);background:#fff}
+
+  /* moving picture carousel */
+  .carousel{position:relative;z-index:2;background:transparent;overflow:hidden;
+    padding:clamp(50px,9vh,110px) 0}
+  .carousel__head{padding:0 clamp(22px,6vw,110px);margin-bottom:40px}
+  .carousel__head .eyebrow{font-family:'Manrope',sans-serif;font-size:13px;font-weight:700;
+    text-transform:uppercase;letter-spacing:.24em;color:#288b8b;display:flex;align-items:center;gap:12px}
+  .carousel__head .eyebrow::before{content:"";width:32px;height:2px;background:#ff6b35}
+  .carousel__head h2{font-size:clamp(30px,5vw,72px);letter-spacing:-.02em;margin-top:18px}
+  .carousel__track{display:flex;gap:clamp(14px,1.6vw,26px);width:max-content;will-change:transform}
+  .carousel__track img{
+    height:clamp(220px,32vh,360px);width:auto;object-fit:cover;flex-shrink:0;
+    /* pointy (house) shape instead of rounded */
+    clip-path:polygon(50% 0%, 100% 30%, 100% 100%, 0% 100%, 0% 30%);
+  }
+
+  /* 3 same smaller bubbles underneath the big bubble */
+  .mini-bubbles{
+    position:absolute;left:50%;top:72%;z-index:0;
+    transform:translateX(-50%);
+    display:flex;gap:clamp(20px,4vw,60px);pointer-events:none;
+  }
+  .mini-bubbles .mb{
+    width:14vmin;height:14vmin;border-radius:50%;background:#ffdcb8;
+  }
+  .eyebrow{font-family:'Manrope',sans-serif;font-size:13px;font-weight:700;
+    text-transform:uppercase;letter-spacing:.24em;color:#288b8b;
+    display:flex;align-items:center;gap:12px;margin-bottom:26px}
+  .eyebrow::before{content:"";width:32px;height:2px;background:#ff6b35}
+  .section h2{font-size:clamp(32px,5.5vw,84px);letter-spacing:-.02em;line-height:.98;max-width:16ch}
+  .section .lead{font-family:'Manrope',sans-serif;max-width:60ch;margin-top:26px;
+    font-size:clamp(16px,1.5vw,21px);line-height:1.55;color:#3a4543}
+
+  .cards{display:grid;grid-template-columns:repeat(3,1fr);gap:clamp(14px,1.6vw,26px);margin-top:64px}
+  @media(max-width:880px){.cards{grid-template-columns:1fr}}
+  .card{position:relative;border-radius:var(--r);overflow:hidden;min-height:420px;
+    display:flex;flex-direction:column;justify-content:flex-end;color:#fff;isolation:isolate}
+  .card img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:-2;transition:transform 1s cubic-bezier(.22,1,.36,1)}
+  .card::after{content:"";position:absolute;inset:0;z-index:-1;background:linear-gradient(180deg,rgba(12,20,19,0) 35%,rgba(12,20,19,.85) 100%)}
+  .card:hover img{transform:scale(1.07)}
+  .card__body{padding:28px}
+  .card h3{font-size:28px;margin-bottom:10px}
+  .card p{font-family:'Manrope',sans-serif;font-size:14px;line-height:1.5;opacity:.85}
+
+  .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:24px;
+    border-top:1px solid rgba(0,0,0,.12);padding-top:54px;margin-top:64px}
+  @media(max-width:760px){.stats{grid-template-columns:repeat(2,1fr)}}
+  .stat .num{font-size:clamp(44px,6vw,82px);letter-spacing:-.04em;color:#288b8b;line-height:1}
+  .stat .lbl{font-family:'Manrope',sans-serif;margin-top:8px;font-size:14px;color:#3a4543;max-width:18ch}
+
+  .cta{position:relative;margin:clamp(20px,4vw,60px) clamp(22px,6vw,110px);
+    background:#0f4a4a;color:#fff;border-radius:var(--r);padding:clamp(48px,8vw,110px);overflow:hidden}
+  .cta h2{font-size:clamp(32px,5.5vw,78px);max-width:18ch}
+  .cta .lead{color:rgba(255,255,255,.85)}
+  .btn{display:inline-flex;align-items:center;gap:12px;margin-top:36px;
+    font-family:'Manrope',sans-serif;font-weight:700;font-size:15px;
+    background:#ff6b35;color:#fff;padding:16px 28px;border-radius:999px}
+
+  footer.site-footer{position:relative;z-index:2;background:#0a5f66;color:#f4f1ea;
+    margin:clamp(14px,2vw,28px);
+    border-radius:clamp(22px,2.4vw,40px);
+    padding:clamp(60px,9vh,120px) clamp(28px,5vw,90px) 44px;
+    font-family:'Manrope','Helvetica Neue',Arial,sans-serif;}
+  .foot-top{
+    display:grid;grid-template-columns:1.3fr 1fr;gap:clamp(40px,6vw,90px);align-items:start;
+    border-bottom:1px solid rgba(255,255,255,.14);padding-bottom:clamp(40px,6vh,72px);
+  }
+  .foot-brand h2{
+    font-family:'Fraunces',Georgia,serif;font-weight:600;letter-spacing:-.03em;
+    font-size:clamp(30px,4vw,58px);line-height:1.02;margin:0 0 22px;
+  }
+  .foot-brand h2 b{color:#ff6b35;font-weight:600}
+  .foot-brand p{max-width:48ch;font-size:clamp(14px,1.1vw,16px);line-height:1.7;
+    color:rgba(244,241,234,.72);margin:0;}
+  .foot-eyebrow{font-size:12px;font-weight:700;letter-spacing:.22em;text-transform:uppercase;
+    color:rgba(244,241,234,.45);margin:30px 0 14px;}
+  .foot-social{display:flex;flex-wrap:wrap;gap:22px;font-weight:600;font-size:15px}
+  .foot-social a{color:#f4f1ea;text-decoration:none;transition:color .3s}
+  .foot-social a:hover{color:#ff6b35}
+  .foot-nav{
+    display:grid;grid-template-columns:1fr 1fr;gap:0 clamp(24px,3vw,50px);
+  }
+  .foot-nav a{display:block;color:rgba(244,241,234,.8);text-decoration:none;
+    font-size:clamp(14px,1.05vw,16px);line-height:2.1;transition:color .3s,transform .3s}
+  .foot-nav a:hover{color:#ff6b35;transform:translateX(5px)}
+  .foot-disclaimer{max-width:70ch;margin:clamp(30px,4vh,46px) 0 0;
+    font-size:12px;line-height:1.7;color:rgba(244,241,234,.45)}
+  .foot-bottom{display:flex;justify-content:space-between;flex-wrap:wrap;gap:14px;
+    font-family:'Manrope',sans-serif;font-size:13px;color:rgba(244,241,234,.5);margin-top:30px;
+    padding-top:8px}
+  .foot-bottom a{color:inherit;text-decoration:none}
+  .foot-bottom a:hover{color:#ff6b35}
+  @media(max-width:760px){
+    .foot-top{grid-template-columns:1fr;gap:40px}
+  }
+
+  .reveal-line{display:block;overflow:hidden}
+  .reveal-line > *{display:block}
+
+  /* section after the hero with two donut rings in the corners */
+  .ring-section{
+    position:relative;z-index:2;min-height:100vh;background:#fff;
+    display:flex;align-items:center;justify-content:center;
+    padding:clamp(70px,12vh,150px) clamp(22px,6vw,110px);
+  }
+  /* circles bleed past the section and get cut by the screen edge, not the section */
+  .donut{
+    position:absolute;border-radius:50%;
+    width:clamp(360px,52vw,820px);aspect-ratio:1;
+    border:clamp(16px,2vw,30px) solid #f7a85c;  /* thin ring = big gap */
+    background:transparent;pointer-events:none;
+  }
+  .donut--left{left:0;top:16%;transform:translateX(-45%)}
+  .donut--right{right:0;bottom:16%;transform:translateX(45%)}
+</style>
+</head>
+<body>
+
+<!-- global page grain overlay -->
+<div class="page-grain"></div>
+
+<!-- ===== tennis ball cursor ===== -->
+<div class="cursor" id="cursor">
+  <svg class="cursor__ball" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+    <circle cx="50" cy="50" r="47" fill="#d4f53b" stroke="#bcd92f" stroke-width="2"/>
+    <path d="M12 14 Q44 50 12 86" fill="none" stroke="#ffffff" stroke-width="4.5" stroke-linecap="round"/>
+    <path d="M88 14 Q56 50 88 86" fill="none" stroke="#ffffff" stroke-width="4.5" stroke-linecap="round"/>
+  </svg>
+</div>
+
+<!-- ===== opening intro: side pictures change, logo centered ===== -->
+<div id="intro">
+  <svg id="introzig" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
+    <path d="M2,98 C30,72 14,54 46,50 C78,46 64,24 98,2" pathLength="1"/>
+  </svg>
+  <img class="intro__logo" src="media/logo.png" alt="DR.VET">
+</div>
+
+<!-- rounded house clip-path (responsive via objectBoundingBox) -->
+<svg width="0" height="0" aria-hidden="true" style="position:absolute">
+  <defs>
+    <clipPath id="houseRound" clipPathUnits="objectBoundingBox">
+      <path d="M0.5398,0.0303 L0.9602,0.3498 Q1,0.38 1,0.43 L1,0.95 Q1,1 0.95,1 L0.05,1 Q0,1 0,0.95 L0,0.43 Q0,0.38 0.0398,0.3498 L0.4602,0.0303 Q0.5,0 0.5398,0.0303 Z"/>
+    </clipPath>
+  </defs>
+</svg>
+
+<!-- full top header: all nav elements (no burger) -->
+<header class="site-nav at-top">
+  <div class="nav-bar site-nav__top">
+    <ul class="nav-utility">
+      <li><a href="https://drvet.lt/apie-mus/"><span class="grainy">Apie mus</span></a></li>
+      <li><a href="https://drvet.lt/kraujo-bankas/"><span class="grainy">Kraujo bankas</span></a></li>
+    </ul>
+    <div class="nav-utility__right">
+      <div class="nav-social">
+        <span class="grainy">Sekite mus:</span>
+        <a href="https://www.facebook.com/drvetlietuva1" target="_blank" rel="noopener" aria-label="Facebook"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M13.5 21v-7h2.3l.4-2.9h-2.7V9.2c0-.8.3-1.4 1.5-1.4h1.3V5.2c-.6-.1-1.4-.2-2.3-.2-2.3 0-3.8 1.4-3.8 3.9v2.2H7.8V14h2.1v7h3.6z"/></svg></a>
+        <a href="https://www.instagram.com/drvet_lietuva/" target="_blank" rel="noopener" aria-label="Instagram"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3.5" y="3.5" width="17" height="17" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17" cy="7" r="1.2" fill="currentColor" stroke="none"/></svg></a>
+        <a href="https://www.linkedin.com/company/drvet/" target="_blank" rel="noopener" aria-label="LinkedIn"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M6.94 7.5a1.94 1.94 0 1 1 0-3.88 1.94 1.94 0 0 1 0 3.88zM5.3 20.5h3.3V9.3H5.3v11.2zM10.6 9.3h3.16v1.53h.05c.44-.83 1.5-1.7 3.1-1.7 3.3 0 3.9 2.17 3.9 5v6.37h-3.3v-5.65c0-1.35-.02-3.08-1.88-3.08-1.88 0-2.17 1.47-2.17 2.98v5.75H10.6V9.3z"/></svg></a>
+        <a href="https://www.youtube.com/@DRVET1" target="_blank" rel="noopener" aria-label="YouTube"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M22 8.2a2.6 2.6 0 0 0-1.8-1.85C18.6 6 12 6 12 6s-6.6 0-8.2.35A2.6 2.6 0 0 0 2 8.2 27 27 0 0 0 1.7 12 27 27 0 0 0 2 15.8a2.6 2.6 0 0 0 1.8 1.85C5.4 18 12 18 12 18s6.6 0 8.2-.35A2.6 2.6 0 0 0 22 15.8 27 27 0 0 0 22.3 12 27 27 0 0 0 22 8.2zM10 14.8V9.2l4.8 2.8-4.8 2.8z"/></svg></a>
+      </div>
+      <a class="nav-odont" href="https://drvet.lt/odontologija/"><span class="grainy">Gyvūnų odontologijos centras</span></a>
+      <a class="nav-cart" href="https://drvet.lt/krepselis/" aria-label="Krepšelis">
+        <svg viewBox="0 0 26.729 26.729" xmlns="http://www.w3.org/2000/svg"><g transform="translate(-1828.636 -15.636)"><path d="M28.422,8.509l-4.2-4.2A4.455,4.455,0,0,0,21.072,3H11.657A4.455,4.455,0,0,0,8.509,4.307l-4.2,4.2A4.455,4.455,0,0,0,3,11.657V25.274a4.455,4.455,0,0,0,4.455,4.455H25.274a4.455,4.455,0,0,0,4.455-4.455V11.657a4.455,4.455,0,0,0-1.307-3.148ZM10.6,6.4a1.559,1.559,0,0,1,1.054-.431h9.415a1.559,1.559,0,0,1,1.054.431L24.665,8.94H8.064ZM25.274,26.759H7.455A1.485,1.485,0,0,1,5.97,25.274V11.91H26.759V25.274A1.485,1.485,0,0,1,25.274,26.759Z" transform="translate(1825.636 12.636)" fill="currentColor"/><path d="M18.395,11a1.485,1.485,0,0,0-1.485,1.485,2.97,2.97,0,1,1-5.94,0,1.485,1.485,0,1,0-2.97,0,5.94,5.94,0,0,0,11.88,0A1.485,1.485,0,0,0,18.395,11Z" transform="translate(1828.061 16.515)" fill="currentColor"/></g></svg>
+      </a>
+    </div>
+  </div>
+  <div class="site-nav__main">
+    <a class="nav-logo" href="https://drvet.lt/"><img src="media/logo.png" alt="DR.VET"></a>
+    <nav class="nav-bar nav-pill" aria-label="Pagrindinis meniu">
+    <ul class="nav-main">
+      <li class="has-child">
+        <span class="list-name"><a href="https://drvet.lt/musu-klinikos/"><span class="grainy">Mūsų klinikos</span></a><span class="chevron"><svg viewBox="0 0 11.018 6.509" xmlns="http://www.w3.org/2000/svg"><path d="M-17970.834,597.281l4.094,4.095,4.1-4.095" transform="translate(17972.248 -595.867)" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/></svg></span></span>
+        <div class="nav-dropdown"><ul>
+          <li><a href="https://drvet.lt/apie-mus/"><span class="grainy">Apie mus</span></a></li>
+          <li><a href="https://drvet.lt/karjera/"><span class="grainy">Karjera ir darbo pasiūlymai</span></a></li>
+          <li><a href="https://drvet.lt/lojalumo-programa/"><span class="grainy">Lojalumo programa</span></a></li>
+          <li><a href="https://drvet.lt/musu-partneriai/"><span class="grainy">Mūsų partneriai</span></a></li>
+          <li><a href="https://drvet.lt/socialines-atsakomybes/"><span class="grainy">Socialinės atsakomybės</span></a></li>
+        </ul></div>
+      </li>
+      <li><a href="https://drvet.lt/specialistai/"><span class="grainy">Specialistai</span></a></li>
+      <li><a href="https://drvet.lt/paslaugos/"><span class="grainy">Paslaugos</span></a></li>
+      <li><a href="https://drvet.lt/planai/"><span class="grainy">Sveikatos planai</span></a></li>
+      <li><a href="https://drvet.lt/kainorastis/"><span class="grainy">Kainoraštis</span></a></li>
+      <li><a href="https://drvet.lt/atsiliepimai/"><span class="grainy">Atsiliepimai</span></a></li>
+      <li><a href="https://drvet.lt/pasiulymai/"><span class="grainy">Tik pas mus</span></a></li>
+      <li><a href="https://drvet.lt/patarimai/"><span class="grainy">Patarimai</span></a></li>
+      <li><a href="https://drvet.lt/kontaktai/"><span class="grainy">Kontaktai</span></a></li>
+    </ul>
+    </nav>
+    <a class="nav-reg" href="https://drvet.lt/registracija/"><span class="grainy">Registruokitės</span></a>
+  </div>
+</header>
+
+<!-- scattered bones + wool (drift with cursor) -->
+<div class="scatter" data-depth="40" style="top:14%;left:6%"><svg class="bone" viewBox="0 0 100 40" fill="currentColor" style="transform:rotate(-18deg)"><circle cx="14" cy="13" r="9"/><circle cx="14" cy="27" r="9"/><circle cx="86" cy="13" r="9"/><circle cx="86" cy="27" r="9"/><rect x="13" y="12" width="74" height="16" rx="8"/></svg></div>
+<div class="scatter" data-depth="64" style="top:20%;right:7%"><svg class="wool" viewBox="0 0 100 100"><circle cx="50" cy="50" r="42" fill="#ffd9b8"/><g fill="none" stroke="#f0a86a" stroke-width="3" stroke-linecap="round"><ellipse cx="50" cy="50" rx="42" ry="17" transform="rotate(35 50 50)"/><ellipse cx="50" cy="50" rx="42" ry="17" transform="rotate(-35 50 50)"/><ellipse cx="50" cy="50" rx="17" ry="42" transform="rotate(20 50 50)"/><path d="M50 92 q10 6 4 16"/></g></svg></div>
+<div class="scatter" data-depth="30" style="top:60%;left:11%"><svg class="bone" viewBox="0 0 100 40" fill="currentColor" style="transform:rotate(26deg)"><circle cx="14" cy="13" r="9"/><circle cx="14" cy="27" r="9"/><circle cx="86" cy="13" r="9"/><circle cx="86" cy="27" r="9"/><rect x="13" y="12" width="74" height="16" rx="8"/></svg></div>
+<div class="scatter" data-depth="52" style="top:70%;right:9%"><svg class="wool" viewBox="0 0 100 100"><circle cx="50" cy="50" r="42" fill="#ffd9b8"/><g fill="none" stroke="#f0a86a" stroke-width="3" stroke-linecap="round"><ellipse cx="50" cy="50" rx="42" ry="17" transform="rotate(35 50 50)"/><ellipse cx="50" cy="50" rx="42" ry="17" transform="rotate(-35 50 50)"/><ellipse cx="50" cy="50" rx="17" ry="42" transform="rotate(20 50 50)"/><path d="M50 92 q10 6 4 16"/></g></svg></div>
+<div class="scatter" data-depth="72" style="top:42%;right:4%"><svg class="bone" viewBox="0 0 100 40" fill="currentColor" style="transform:rotate(10deg)"><circle cx="14" cy="13" r="9"/><circle cx="14" cy="27" r="9"/><circle cx="86" cy="13" r="9"/><circle cx="86" cy="27" r="9"/><rect x="13" y="12" width="74" height="16" rx="8"/></svg></div>
+<div class="scatter" data-depth="36" style="top:84%;left:32%"><svg class="wool" viewBox="0 0 100 100"><circle cx="50" cy="50" r="42" fill="#ffd9b8"/><g fill="none" stroke="#f0a86a" stroke-width="3" stroke-linecap="round"><ellipse cx="50" cy="50" rx="42" ry="17" transform="rotate(35 50 50)"/><ellipse cx="50" cy="50" rx="42" ry="17" transform="rotate(-35 50 50)"/><ellipse cx="50" cy="50" rx="17" ry="42" transform="rotate(20 50 50)"/><path d="M50 92 q10 6 4 16"/></g></svg></div>
+<div class="scatter" data-depth="48" style="top:8%;left:46%"><svg class="bone" viewBox="0 0 100 40" fill="currentColor" style="transform:rotate(-6deg)"><circle cx="14" cy="13" r="9"/><circle cx="14" cy="27" r="9"/><circle cx="86" cy="13" r="9"/><circle cx="86" cy="27" r="9"/><rect x="13" y="12" width="74" height="16" rx="8"/></svg></div>
+
+<section class="hero">
+  <div class="hero__media">
+    <video class="hero__video" autoplay muted loop playsinline poster="media/hero_poster.jpg">
+      <source src="media/hero.webm" type="video/webm">
+      <source src="media/hero.mp4" type="video/mp4">
+    </video>
+    <div class="hero__grain"></div>
+  </div>
+
+  <h1 class="hero__heading">
+    <span class="line"><span class="grainy">Pažangi</span></span>
+    <span class="line"><span class="grainy"><em>veterinarija</em></span></span>
+    <span class="line"><span class="grainy">visom keturiom</span></span>
+    <svg class="scribble" viewBox="0 0 300 50" preserveAspectRatio="none"><path d="M5,36 C40,47 72,28 104,35 C140,43 168,24 205,32 C242,40 268,18 296,9"/></svg>
+    <p class="hero__desc">Kokios pagalbos ir kada beprireiktų Jūsų augintiniui, mes pasiruošę ją suteikti greitai ir profesionaliai.</p>
+    <a class="hero__btn" href="https://drvet.lt/paslaugos/">
+      <span class="txt">Žiūrėti plačiau</span>
+      <span class="circ"><svg viewBox="0 0 24 24" fill="none"><path d="M5 19L19 5M19 5H8M19 5V16" stroke="#0c1413" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+    </a>
+  </h1>
+</section>
+
+<!-- huge grainy scroll spine: follows the viewport, fills as you scroll hero -> footer -->
+<div class="scrollspine" aria-hidden="true">
+  <svg class="scrollspine__fill" viewBox="0 0 100 1000" preserveAspectRatio="none">
+    <path d="M14,0 C14,90 84,110 84,200 S16,310 16,400 S84,510 84,600 S16,710 16,800 S86,910 86,1000"/>
+  </svg>
+</div>
+
+<!-- first section after the hero: Mūsų klinikos -->
+<section class="klinikos">
+  <div class="scatter scatter--behind" data-depth="58" style="top:8%;right:6%"><svg class="wool" viewBox="0 0 100 100"><circle cx="50" cy="50" r="42" fill="#ffd9b8"/><g fill="none" stroke="#f0a86a" stroke-width="3" stroke-linecap="round"><ellipse cx="50" cy="50" rx="42" ry="17" transform="rotate(35 50 50)"/><ellipse cx="50" cy="50" rx="42" ry="17" transform="rotate(-35 50 50)"/><ellipse cx="50" cy="50" rx="17" ry="42" transform="rotate(20 50 50)"/><path d="M50 92 q10 6 4 16"/></g></svg></div>
+  <div class="scatter scatter--behind" data-depth="40" style="bottom:10%;left:4%"><svg class="bone" viewBox="0 0 100 40" fill="currentColor" style="transform:rotate(-16deg)"><circle cx="14" cy="13" r="9"/><circle cx="14" cy="27" r="9"/><circle cx="86" cy="13" r="9"/><circle cx="86" cy="27" r="9"/><rect x="13" y="12" width="74" height="16" rx="8"/></svg></div>
+  <div class="klinikos__text">
+    <h2 class="grainy">Mūsų klinikos</h2>
+    <p class="grainy">Kiekviena DR.VET klinika paslaugomis papildo viena kitą. Išsirinkite Jums patogiausią kliniką pagal savo ir savo augintinio poreikius.</p>
+    <a class="hero__btn" href="https://drvet.lt/musu-klinikos/">
+      <span class="txt">Žiūrėti klinikas</span>
+      <span class="circ"><svg viewBox="0 0 24 24" fill="none"><path d="M5 19L19 5M19 5H8M19 5V16" stroke="#0c1413" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+    </a>
+  </div>
+  <figure class="klinikos__img">
+    <img src="media/klinikos.png" alt="DR.VET Žalgirio klinika">
+  </figure>
+</section>
+
+<!-- second section: Specialistai (image left, text right) -->
+<section class="klinikos klinikos--rev">
+  <div class="scatter scatter--behind" data-depth="50" style="top:12%;left:5%"><svg class="bone" viewBox="0 0 100 40" fill="currentColor" style="transform:rotate(22deg)"><circle cx="14" cy="13" r="9"/><circle cx="14" cy="27" r="9"/><circle cx="86" cy="13" r="9"/><circle cx="86" cy="27" r="9"/><rect x="13" y="12" width="74" height="16" rx="8"/></svg></div>
+  <div class="scatter scatter--behind" data-depth="64" style="bottom:8%;right:5%"><svg class="wool" viewBox="0 0 100 100"><circle cx="50" cy="50" r="42" fill="#ffd9b8"/><g fill="none" stroke="#f0a86a" stroke-width="3" stroke-linecap="round"><ellipse cx="50" cy="50" rx="42" ry="17" transform="rotate(35 50 50)"/><ellipse cx="50" cy="50" rx="42" ry="17" transform="rotate(-35 50 50)"/><ellipse cx="50" cy="50" rx="17" ry="42" transform="rotate(20 50 50)"/><path d="M50 92 q10 6 4 16"/></g></svg></div>
+  <div class="klinikos__text">
+    <h2 class="grainy">Specialistai</h2>
+    <p class="grainy">DR.VET veterinarijos klinikose Jūsų laukia dėmesingi, profesionalūs, gyvūnus mylintys ir savo darbui atsidavę specialistai, kuriais galite visiškai pasitikėti.</p>
+    <a class="hero__btn" href="https://drvet.lt/specialistai/">
+      <span class="txt">Susipažinkite</span>
+      <span class="circ"><svg viewBox="0 0 24 24" fill="none"><path d="M5 19L19 5M19 5H8M19 5V16" stroke="#0c1413" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+    </a>
+  </div>
+  <figure class="klinikos__img">
+    <img src="media/specialistai.png" alt="DR.VET specialistas su augintiniu">
+  </figure>
+</section>
+
+<!-- third section: Sveikatos planai (image right, text left) -->
+<section class="klinikos">
+  <div class="scatter scatter--behind" data-depth="62" style="top:10%;right:7%"><svg class="wool" viewBox="0 0 100 100"><circle cx="50" cy="50" r="42" fill="#ffd9b8"/><g fill="none" stroke="#f0a86a" stroke-width="3" stroke-linecap="round"><ellipse cx="50" cy="50" rx="42" ry="17" transform="rotate(35 50 50)"/><ellipse cx="50" cy="50" rx="42" ry="17" transform="rotate(-35 50 50)"/><ellipse cx="50" cy="50" rx="17" ry="42" transform="rotate(20 50 50)"/><path d="M50 92 q10 6 4 16"/></g></svg></div>
+  <div class="scatter scatter--behind" data-depth="44" style="bottom:12%;left:5%"><svg class="bone" viewBox="0 0 100 40" fill="currentColor" style="transform:rotate(12deg)"><circle cx="14" cy="13" r="9"/><circle cx="14" cy="27" r="9"/><circle cx="86" cy="13" r="9"/><circle cx="86" cy="27" r="9"/><rect x="13" y="12" width="74" height="16" rx="8"/></svg></div>
+  <div class="klinikos__text">
+    <h2 class="grainy">Sveikatos planai Jūsų augintiniams</h2>
+    <p class="grainy">Gaukite būtiniausias paslaugas už geriausią kainą ir būkite ramūs dėl savo augintinio sveikatos.</p>
+    <a class="hero__btn" href="https://drvet.lt/planai/">
+      <span class="txt">Išsirinkite tinkamiausią</span>
+      <span class="circ"><svg viewBox="0 0 24 24" fill="none"><path d="M5 19L19 5M19 5H8M19 5V16" stroke="#0c1413" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+    </a>
+  </div>
+  <figure class="klinikos__img">
+    <img src="media/planai.png" alt="Augintinis DR.VET klinikoje">
+  </figure>
+</section>
+
+<!-- PetsApp banner -->
+<section class="petsapp">
+  <div class="petsapp__card grain-bg">
+    <div class="petsapp__text">
+      <h2 class="grainy">Veterinaras Jūsų telefone</h2>
+      <p class="grainy">Parsisiųskite DR. VET mobiliąją programėlę PetsApp, patogiai registruokitės vizitams ir išmaniai bendraukite su veterinarijos gydytojais.</p>
+      <p class="petsapp__label grainy">Atsisiųskite dabar:</p>
+      <div class="petsapp__badges">
+        <img src="media/petsapp_logo.png" alt="PetsApp">
+        <a href="https://apps.apple.com/app/petsapp" aria-label="App Store"><img src="media/badge_appstore.png" alt="Download on the App Store"></a>
+        <a href="https://play.google.com/store/apps" aria-label="Google Play"><img src="media/badge_googleplay.png" alt="Get it on Google Play"></a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== footer ===== -->
+<footer class="site-footer grain-bg">
+  <div class="foot-top">
+    <div class="foot-brand">
+      <h2 class="grainy">DR.<b>VET</b> — veterinarijos klinika</h2>
+      <p>DR.VET – pažangus veterinarijos klinikų tinklas, kuriame Jūsų laukia platus profesionalių paslaugų spektras ir patyrę įvairių veterinarijos sričių specialistai.</p>
+      <div class="foot-eyebrow">Sekite mus</div>
+      <div class="foot-social">
+        <a href="https://www.facebook.com/drvet.lt" target="_blank" rel="noopener">Facebook</a>
+        <a href="https://www.instagram.com/drvet.lt" target="_blank" rel="noopener">Instagram</a>
+        <a href="https://www.linkedin.com/company/drvet" target="_blank" rel="noopener">LinkedIn</a>
+        <a href="https://www.youtube.com/@drvet" target="_blank" rel="noopener">YouTube</a>
+      </div>
+    </div>
+    <nav class="foot-nav" aria-label="Footer">
+      <a href="https://drvet.lt/musu-klinikos/">Mūsų klinikos</a>
+      <a href="https://drvet.lt/apie-mus/">Apie mus</a>
+      <a href="https://drvet.lt/specialistai/">Veterinarijos specialistai</a>
+      <a href="https://drvet.lt/paslaugos/">Paslaugos</a>
+      <a href="https://drvet.lt/planai/">Sveikatos planai</a>
+      <a href="https://drvet.lt/kraujo-bankas/">Kraujo bankas</a>
+      <a href="https://drvet.lt/kainorastis/">Kainoraštis</a>
+      <a href="https://drvet.lt/tik-pas-mus/">Tik pas mus</a>
+      <a href="https://drvet.lt/atsiliepimai/">Atsiliepimai</a>
+      <a href="https://drvet.lt/lojalumo-programa/">Lojalumo programa</a>
+      <a href="https://drvet.lt/patarimai/">Patarimai</a>
+      <a href="https://drvet.lt/kontaktai/">Kontaktai</a>
+      <a href="https://drvet.lt/klubas/">Naujų šeimininkų klubas</a>
+      <a href="https://drvet.lt/pets-app/">Pets APP</a>
+    </nav>
+  </div>
+  <p class="foot-disclaimer">Tekstinis ir grafinis svetainės turinys priklauso drvet.lt ir negali būti naudojamas kituose šaltiniuose be mūsų leidimo ir be nuorodos į šaltinį.</p>
+  <div class="foot-bottom">
+    <span>© Visos teisės saugomos 2026</span>
+    <a href="https://drvet.lt/privatumo-politika/">Privatumo politika</a>
+  </div>
+</footer>
+
+<script>
+// ===== always start at the very top on reload =====
+if('scrollRestoration' in history){ history.scrollRestoration='manual'; }
+window.scrollTo(0,0);
+window.addEventListener('load',()=>window.scrollTo(0,0));
+
+// ===== tennis ball cursor: follow + spin on hover =====
+(function(){
+  const cur = document.getElementById('cursor');
+  if(!cur || matchMedia('(hover:none)').matches) return;
+  let x=innerWidth/2, y=innerHeight/2, tx=x, ty=y;
+  addEventListener('mousemove',e=>{tx=e.clientX; ty=e.clientY});
+  (function loop(){
+    x+=(tx-x)*.2; y+=(ty-y)*.2;
+    cur.style.transform=`translate(${x}px,${y}px) translate(-50%,-50%)`;
+    requestAnimationFrame(loop);
+  })();
+  // spin when hovering the picture or any link
+  const spinTargets='.hero__media, a, [data-spin]';
+  document.addEventListener('mouseover',e=>{ if(e.target.closest(spinTargets)) cur.classList.add('spin'); });
+  document.addEventListener('mouseout', e=>{ if(e.target.closest(spinTargets)) cur.classList.remove('spin'); });
+})();
+
+// ===== footer reveal on scroll =====
+(function(){
+  if(!window.gsap || !window.ScrollTrigger) return;
+  gsap.registerPlugin(ScrollTrigger);
+  const items = gsap.utils.toArray('.foot-brand h2, .foot-brand p, .foot-eyebrow, .foot-social, .foot-nav a, .foot-disclaimer, .foot-bottom');
+  gsap.from(items, {
+    y:36, opacity:0, duration:.9, ease:'expo.out', stagger:.05,
+    scrollTrigger:{ trigger:'.site-footer', start:'top 78%' }
+  });
+})();
+
+// ===== smooth scrolling (Lenis) wired into GSAP ScrollTrigger =====
+(function(){
+  if(!window.Lenis || !window.gsap) return;
+  gsap.registerPlugin(ScrollTrigger);
+  const lenis = new Lenis({ lerp:0.1, wheelMultiplier:1, smoothWheel:true });
+  window.__lenis = lenis;
+  lenis.on('scroll', ScrollTrigger.update);
+  gsap.ticker.add(t=> lenis.raf(t*1000));
+  gsap.ticker.lagSmoothing(0);
+  addEventListener('resize', ()=>{ if(lenis.resize) lenis.resize(); ScrollTrigger.refresh(); });
+})();
+
+// ===== header: white at the very top, grainy dark cyan once scrolled =====
+(function(){
+  const nav = document.querySelector('.site-nav');
+  if(!nav) return;
+  let last = 0;
+  const update = ()=>{
+    const y = window.scrollY || window.pageYOffset || 0;
+    nav.classList.toggle('at-top', y <= 8);
+    if(y > last && y > 140) nav.classList.add('nav-hidden');       // scrolling down -> hide
+    else if(y < last) nav.classList.remove('nav-hidden');          // scrolling up -> show
+    last = y;
+  };
+  update();
+  addEventListener('scroll', update, {passive:true});
+  if(window.__lenis) window.__lenis.on('scroll', update);
+})();
+
+// ===== grainy scroll spine: global line spanning the whole page (hero -> footer) =====
+(function(){
+  if(!window.gsap || !window.ScrollTrigger) return;
+  gsap.registerPlugin(ScrollTrigger);
+  const spine = document.querySelector('.scrollspine');
+  const fill  = document.querySelector('.scrollspine__fill');
+  const hero  = document.querySelector('.hero');
+  const footer= document.querySelector('.site-footer');
+  if(!spine || !fill || !hero || !footer) return;
+  function place(){
+    // start after the hero, run through the bottom of the footer
+    const top = hero.offsetTop + hero.offsetHeight;
+    spine.style.top = top+'px';
+    spine.style.height = Math.max(0,(footer.offsetTop + footer.offsetHeight) - top)+'px';
+  }
+  place();
+  gsap.fromTo(fill,{'--rev':'-8%'},{
+    '--rev':'112%', ease:'none',
+    scrollTrigger:{ trigger:spine, start:'top top', end:'bottom bottom', scrub:0.6 }
+  });
+  addEventListener('resize', ()=>{ place(); ScrollTrigger.refresh(); });
+  addEventListener('load',   ()=>{ place(); ScrollTrigger.refresh(); });
+  if(document.fonts && document.fonts.ready) document.fonts.ready.then(()=>{ place(); ScrollTrigger.refresh(); });
+})();
+
+// ===== reveal sections on scroll: picture boxes scale-in, texts rise (staggered) =====
+(function(){
+  if(!window.gsap || !window.ScrollTrigger) return;
+  gsap.registerPlugin(ScrollTrigger);
+  gsap.utils.toArray('.klinikos').forEach(sec=>{
+    const img = sec.querySelector('.klinikos__img');
+    const txt = sec.querySelector('.klinikos__text');
+    const tl = gsap.timeline({ scrollTrigger:{ trigger:sec, start:'top 78%' } });
+    if(img) tl.from(img,{ y:60, scale:.9, opacity:0, duration:1.1, ease:'expo.out' }, 0);
+    if(txt) tl.from(txt.children,{ y:42, opacity:0, duration:.9, ease:'expo.out', stagger:.12 }, 0.15);
+  });
+  gsap.utils.toArray('.petsapp__card').forEach(card=>{
+    gsap.from(card,{ y:60, scale:.96, opacity:0, duration:1.1, ease:'expo.out',
+      scrollTrigger:{ trigger:card, start:'top 82%' }});
+  });
+})();
+
+// position the underline overlay exactly over the word "veterinarija"
+function placeScribble(){
+  const heading=document.querySelector('.hero__heading');
+  const word=document.querySelector('.hero__heading em');
+  const scr=document.querySelector('.scribble');
+  if(!heading||!word||!scr) return;
+  const h=heading.getBoundingClientRect(), w=word.getBoundingClientRect();
+  scr.style.left  =(w.left - h.left - w.width*0.04)+'px';
+  scr.style.top   =(w.bottom - h.top - w.height*0.30)+'px';
+  scr.style.width =(w.width*1.08)+'px';
+  scr.style.height=(w.height*0.42)+'px';
+}
+addEventListener('resize', placeScribble);
+if(document.fonts && document.fonts.ready) document.fonts.ready.then(placeScribble);
+
+// reveal the hero heading text (blur-to-sharp staggered rise) + draw the underline
+function heroText(){
+  const lines = gsap.utils.toArray('.hero__heading .line span');
+  const tl = gsap.timeline();
+  tl.fromTo(lines,
+    {yPercent:110, filter:'blur(14px)', opacity:0},
+    {yPercent:0,   filter:'blur(0px)',  opacity:1, duration:1.3, stagger:.15, ease:'expo.out'});
+  // the pencil underline simply fades in left → right (no bounce)
+  tl.add(placeScribble, '-=0.5')
+    .set('.scribble',{opacity:1, '--rev':'-25%'}, '<')
+    .to('.scribble',{'--rev':'120%', duration:1.1, ease:'power2.out'}, '<');
+  // description + button rise in (same staggered style as the after-hero sections)
+  tl.to('.hero__desc, .hero__btn',{y:0, opacity:1, duration:.9, ease:'expo.out', stagger:.12}, '-=0.7');
+}
+
+// hide the hero lines immediately so they are absent until they animate in
+if(window.gsap){
+  gsap.set('.hero__heading .line span',{yPercent:110, opacity:0, filter:'blur(14px)'});
+  gsap.set('.hero__desc, .hero__btn',{opacity:0, y:28});
+  gsap.set('.hero__media',{y:60, scale:.9, opacity:0});   // hidden behind the intro until it finishes
+}
+
+// hero entrance: the video block rises up into place (full size), then text reveals
+function heroAnims(){
+  // identical to the lower image boxes: rise + scale-in + fade, expo.out
+  gsap.set('.hero__media',{y:60, scale:.9, opacity:0});
+  gsap.timeline()
+    .to('.hero__media',{y:0, scale:1, opacity:1, duration:1.1, ease:'expo.out'}, 0)
+    .add(heroText, 0.35);
+}
+
+// ===== intro: 3 sideways strokes draw in, then the whole intro fades to reveal the page =====
+function runIntro(){
+  if(!window.gsap){ const i=document.getElementById('intro'); if(i) i.remove(); return; }
+  const tl = gsap.timeline();
+  tl.to('#introzig',{'--w':'110%', duration:1.2, ease:'power2.inOut'}, 0.2)
+    .to('#intro',{opacity:0, duration:.6, ease:'power2.out'}, '+=0.2')
+    .set('#intro',{display:'none'})
+    .add(heroAnims);   // page content reveals as the zigzag-intro fades
+}
+// run as soon as the DOM is ready — do NOT wait for the video to finish loading
+if(document.readyState==='loading'){ document.addEventListener('DOMContentLoaded', runIntro); }
+else { runIntro(); }
+
+// ===== hover the hero video: morph it into a bigger circle =====
+(function(){
+  const media = document.querySelector('.hero__media');
+  const video = document.querySelector('.hero__video');
+  if(!media || !video || !window.gsap || matchMedia('(hover:none)').matches) return;
+  media.addEventListener('mouseenter', ()=>{
+    gsap.to(media, {scale:1.08, duration:.6, ease:'expo.out'});
+    gsap.fromTo(video, {clipPath:'circle(42% at 50% 50%)', webkitClipPath:'circle(42% at 50% 50%)'},
+                       {clipPath:'circle(62% at 50% 50%)', webkitClipPath:'circle(62% at 50% 50%)', duration:.6, ease:'expo.out'});
+  });
+  media.addEventListener('mouseleave', ()=>{
+    gsap.to(media, {scale:1, duration:.6, ease:'expo.out'});
+    gsap.to(video, {clipPath:'circle(42% at 50% 50%)', webkitClipPath:'circle(42% at 50% 50%)', duration:.4, ease:'power2.in',
+      onComplete:()=>{ video.style.clipPath='url(#houseRound)'; video.style.webkitClipPath='url(#houseRound)'; }});
+  });
+})();
+
+// scattered bones + wool: drift with the cursor + smooth idle levitation
+(function(){
+  // each object reacts in its own direction
+  const dirs=[[1,1],[-1,.6],[.7,-1],[-1,-1],[1,-.7],[-.6,1],[1,.4]];
+  const items=[...document.querySelectorAll('.scatter')].map((el,i)=>({
+    el, depth:+el.dataset.depth||40,
+    fx:dirs[i%dirs.length][0], fy:dirs[i%dirs.length][1],
+    x:0,y:0,tx:0,ty:0,
+    amp: 7 + (i%3)*5,             // float height
+    rot: 3 + (i%4),               // gentle rotation sway
+    phase: i*1.7,                 // desync each one
+    speed: 0.0009 + (i%5)*0.00014
+  }));
+  if(!items.length) return;
+  if(!matchMedia('(hover:none)').matches){
+    addEventListener('mousemove',e=>{
+      const dx=e.clientX/innerWidth-.5, dy=e.clientY/innerHeight-.5;
+      items.forEach(s=>{ s.tx=dx*s.depth*s.fx; s.ty=dy*s.depth*s.fy; });
+    });
+  }
+  (function loop(t){
+    items.forEach(s=>{
+      s.x+=(s.tx-s.x)*.08; s.y+=(s.ty-s.y)*.08;          // ease toward cursor target
+      const fy=Math.sin(t*s.speed + s.phase)*s.amp;        // bob up / down
+      const fx=Math.cos(t*s.speed*0.7 + s.phase)*s.amp*0.5;// slight side drift
+      const r =Math.sin(t*s.speed*0.8 + s.phase)*s.rot;    // sway rotation
+      s.el.style.transform=`translate(${s.x+fx}px,${s.y+fy}px) rotate(${r}deg)`;
+    });
+    requestAnimationFrame(loop);
+  })(0);
+})();
+</script>
+</body>
+</html>
